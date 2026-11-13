@@ -15,6 +15,7 @@ pipeline/                  script shell Mac (M2): video → frames → SfM → s
 content/pois/*.md          schede punti di interesse (frontmatter YAML + testo markdown)
 content/site.yaml          geolocalizzazione della chiesa (lat/lon/quota) e copertura Google 3D Tiles
 content/boundary.geojson   confine del paese: località ISTAT 2021 (CC BY 4.0) + vie che le collegano (OSM, ODbL), un'unica area, da pipeline/istat_boundary.py
+content/borghi.geojson     nomi dei borghi dentro il confine (OSM, ODbL), da pipeline/osm_borghi.py
 apps/web/                  viewer: Vite + TypeScript + three.js + Spark (@sparkjsdev/spark)
 apps/web/public/splats/    splat compressi serviti in dev (git-ignored, tranne .gitkeep)
 .claude/agents/            subagent specializzati (vedi sotto)
@@ -36,7 +37,7 @@ Attribuzioni Google (logo + copyright) sempre visibili in exterior: obbligo dei 
 
 **Confine del paese** (`src/boundary.ts`): contorno dorato appoggiato al terreno, esterno scurito
 (maschera campionata nello shader delle tiles, agganciata su `load-model` concatenando `onBeforeCompile`),
-etichetta col nome. Solo in exterior e fuori da Street View. Citare sempre ISTAT e OSM + licenze nel pannello.
+etichetta col nome, nomi dei borghi sospesi in alto con un filo fino al terreno. Solo in exterior e fuori da Street View. Citare sempre ISTAT e OSM + licenze nel pannello.
 
 **Street View** (`src/streetview.ts`, richiede *Maps JavaScript API* abilitata sulla stessa chiave):
 copertura scoperta a runtime percorrendo i link tra panorami a partire da quello ufficiale Google più

@@ -1,0 +1,85 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Borgo Castagnè",
+    "place": "isolated_dwelling",
+    "osm": "node/11757773114",
+    "source": "© OpenStreetMap contributors – ODbL"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     12.2679251,
+     45.9805377
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Borgo Castello",
+    "place": "isolated_dwelling",
+    "osm": "node/2614734314",
+    "source": "© OpenStreetMap contributors – ODbL"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     12.2680002,
+     45.9854392
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Borgo Vignola",
+    "place": "isolated_dwelling",
+    "osm": "node/11757773118",
+    "source": "© OpenStreetMap contributors – ODbL"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     12.276042,
+     45.9891974
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Borgo Villa",
+    "place": "isolated_dwelling",
+    "osm": "node/11757773117",
+    "source": "© OpenStreetMap contributors – ODbL"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     12.2736436,
+     45.9881791
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Case Foda",
+    "place": "hamlet",
+    "osm": "node/4071973063",
+    "source": "© OpenStreetMap contributors – ODbL"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     12.2790731,
+     45.9837625
+    ]
+   }
+  }
+ ]
+}
