@@ -23,7 +23,9 @@ Un solo motore 3D: **three.js**. Gli splat sono renderizzati con Spark (`SparkRe
 Il paese usa Google Photorealistic 3D Tiles via `3d-tiles-renderer` nella stessa scena (no Cesium).
 
 Due modalità (`src/modes.ts`, `body[data-mode]`):
-- **exterior**: tiles Google visibili, splat nascosto, unità = metri, chiesa nell'origine
+- **exterior**: tiles Google visibili, splat nascosto, unità = metri, assi **+x ovest, +z nord**, +y su;
+  per posizionare dati geografici usare `tiles.ellipsoid` + `tiles.group.matrixWorld`, mai assi scritti a mano;
+  sito nell'origine
   (`ReorientationPlugin` su `content/site.yaml`, quota ellissoidica = s.l.m. + ~47 m di geoide).
   Si arriva con un volo dall'alto; "Entra in chiesa" vola alla porta e dissolve nell'interno.
 - **interior**: splat + POI. Unità della ricostruzione.

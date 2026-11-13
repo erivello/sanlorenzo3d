@@ -31,8 +31,10 @@ const DRACO_DECODER = "https://www.gstatic.com/draco/versioned/decoders/1.5.7/";
 const GOOGLE_LOGO = "https://maps.gstatic.com/mapfiles/api-3/images/google_white5_hdpi.png";
 
 /**
- * Google Photorealistic 3D Tiles, re-centred so the church sits at the
- * three.js origin (Y-up, metres).
+ * Google Photorealistic 3D Tiles, re-centred so the site (lat/lon) sits at the
+ * three.js origin. Resulting frame (measured): +x west, +z north, +y up, metres.
+ * To place geo data, use tiles.ellipsoid + tiles.group.matrixWorld rather than
+ * hand-written axis conversions.
  */
 export class GoogleTiles {
   readonly tiles: TilesRenderer;

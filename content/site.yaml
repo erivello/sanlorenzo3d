@@ -8,8 +8,10 @@ lon: 12.2712306
 # Google Earth showed ~349 m nearby; calibrated to 361 so the ground of the Map Tiles
 # API mesh sits at y≈0 in the viewer (raycast on 2026-11-13).
 elevation_m: 361
-# Church centre relative to (lat, lon), in viewer metres: +x east, -z north.
-church_offset_m: [8, 0, -8]
+# Church centre relative to (lat, lon), in viewer metres. Viewer axes (frame set by the
+# tiles' ReorientationPlugin, measured 2026-11-13): +x = WEST, +z = NORTH, +y = up.
+# From the OSM footprint "chiesa di San Lorenzo Martire" (way/146593916); bell tower ~20 m south.
+church_offset_m: [5, 0, -13]
 google_3d_tiles:
   # Google Earth (web) shows a full 3D model of church and bell tower (imagery 2025-11-07),
   # but the Map Tiles API currently serves only terrain + satellite imagery here

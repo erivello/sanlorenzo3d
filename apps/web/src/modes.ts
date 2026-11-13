@@ -4,9 +4,8 @@ import type { Vec3 } from "./content";
 
 export type Mode = "exterior" | "interior";
 
-// Exterior poses in metres (+x east, -z north, ground ≈ y 0), relative to the church.
-// The hill rises to the south, so the camera looks at the church from the north-west,
-// with the slopes as a backdrop.
+// Exterior poses in metres, relative to the church (viewer frame: +x west, +z north,
+// ground ≈ y 0 — see content/site.yaml).
 const [cx, cy, cz] = site.church_offset_m;
 const at = (x: number, y: number, z: number): Vec3 => [cx + x, cy + y, cz + z];
 const VILLAGE_HIGH: CameraPose = { position: at(-1100, 900, -1300), target: at(0, 0, 0) };
