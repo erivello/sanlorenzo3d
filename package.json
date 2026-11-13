@@ -1,0 +1,13 @@
+{
+  "name": "sanlorenzo3d",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w apps/web",
+    "build": "npm run build -w apps/web",
+    "typecheck": "npm run typecheck -w apps/web",
+    "preview": "npm run preview -w apps/web"
+  }
+}

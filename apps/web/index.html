@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>San Lorenzo 3D</title>
+  </head>
+  <body>
+    <div id="viewport"></div>
+    <div id="hotspots"></div>
+    <div id="loading">Caricamento della chiesa…</div>
+
+    <aside id="panel">
+      <header>
+        <h1>San Lorenzo di Montagna</h1>
+        <p class="subtitle">Guida 3D della chiesa</p>
+      </header>
+      <ol id="poi-list"></ol>
+      <article id="poi-detail" hidden>
+        <p class="status" id="poi-status"></p>
+        <h2 id="poi-title"></h2>
+        <div id="poi-body"></div>
+        <details id="poi-sources-wrap">
+          <summary>Fonti</summary>
+          <ul id="poi-sources"></ul>
+        </details>
+        <nav class="tour-nav">
+          <button id="prev" type="button">‹ Precedente</button>
+          <button id="overview" type="button">Panoramica</button>
+          <button id="next" type="button">Successivo ›</button>
+        </nav>
+      </article>
+    </aside>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.env.local
+.DS_Store
+
+# raw captures and pipeline workspace
+captures/
+data/
+
+# splat assets
+*.ply
+*.spz
+*.sog
+*.splat
+*.ksplat
+apps/web/public/splats/*
+!apps/web/public/splats/.gitkeep
