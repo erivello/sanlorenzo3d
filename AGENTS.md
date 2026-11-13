@@ -32,6 +32,13 @@ Due modalità (`src/modes.ts`, `body[data-mode]`):
 Senza `VITE_GOOGLE_MAPS_API_KEY`, o se il tileset radice fallisce (chiave/fatturazione),
 la modalità exterior viene disattivata e il viewer resta sull'interno con un avviso.
 Attribuzioni Google (logo + copyright) sempre visibili in exterior: obbligo dei termini d'uso.
+
+**Street View** (`src/streetview.ts`, richiede *Maps JavaScript API* abilitata sulla stessa chiave):
+copertura scoperta a runtime percorrendo i link tra panorami a partire da quello ufficiale Google più
+vicino alla chiesa (esclude le foto sferiche degli utenti, che non sono collegate), disegnata come linee
+blu sul terreno. Clic vicino a una linea → panorama ufficiale Google nella direzione della camera;
+"Vista dall'alto" riporta il 3D sopra il punto raggiunto. Le immagini si mostrano solo nel viewer
+Google (termini d'uso): mai leggerle o salvarle; niente cache oltre la sessione.
 Nota: a San Lorenzo la Map Tiles API fornisce solo terreno + satellite (edifici piatti), anche se
 Google Earth web mostra il 3D completo. Vedi `content/site.yaml`.
 

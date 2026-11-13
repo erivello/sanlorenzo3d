@@ -9,6 +9,7 @@
     <div id="viewport"></div>
     <div id="hotspots"></div>
     <div id="loading">Caricamento della chiesa…</div>
+    <div id="street"><div id="street-view"></div></div>
     <div id="veil"></div>
     <div id="attribution"></div>
     <p id="notice" role="status" hidden></p>
@@ -36,6 +37,17 @@
       <section class="exterior-only">
         <p>Il paese visto dall'alto. Ruota e avvicinati, poi entra in chiesa.</p>
         <button id="enter" type="button" class="primary">Entra in chiesa</button>
+        <div class="street-box">
+          <button id="street-church" type="button" class="secondary" disabled>
+            Davanti alla chiesa (Street View)
+          </button>
+          <p id="street-status" class="muted">Carico Street View…</p>
+        </div>
+      </section>
+      <section class="street-only">
+        <p>Sei in strada. Muoviti con le frecce del panorama o cliccando sulla via.</p>
+        <button id="street-enter" type="button" class="primary">Entra in chiesa</button>
+        <button id="street-close" type="button" class="secondary">‹ Vista dall'alto</button>
       </section>
       <button id="exit" type="button" class="interior-only link">‹ Torna al paese</button>
       <ol id="poi-list" class="interior-only"></ol>

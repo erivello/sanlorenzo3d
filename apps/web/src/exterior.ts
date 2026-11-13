@@ -1,4 +1,4 @@
-import { MathUtils } from "three";
+import { MathUtils, Matrix4, Raycaster, Vector3 } from "three";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { TilesRenderer } from "3d-tiles-renderer";
 import {
@@ -26,6 +26,7 @@ export const site = parse(siteYaml) as Site;
 // The tiles live on the WGS84 ellipsoid, so the origin must use ellipsoid height.
 const GEOID_OFFSET_M = 47;
 
+const DOWN = new Vector3(0, -1, 0);
 const DRACO_DECODER = "https://www.gstatic.com/draco/versioned/decoders/1.5.7/";
 // Google logo for dark backgrounds, served by Google for Maps attribution.
 const GOOGLE_LOGO = "https://maps.gstatic.com/mapfiles/api-3/images/google_white5_hdpi.png";
@@ -80,6 +81,36 @@ export class GoogleTiles {
   set visible(v: boolean) {
     this.tiles.group.visible = v;
   }
+
+  /** True once the root tileset is loaded and the frame is oriented. */
+  get ready() {
+    return !!this.tiles.root;
+  }
+
+  /** WGS84 degrees → scene position (y = ellipsoid height 0, use groundAt for terrain). */
+  toScene(lat: number, lng: number, target = new Vector3()) {
+    const t = this.tiles;
+    t.group.updateMatrixWorld(true);
+    t.ellipsoid.getCartographicToPosition(lat * MathUtils.DEG2RAD, lng * MathUtils.DEG2RAD, 0, target);
+    return target.applyMatrix4(t.group.matrixWorld);
+  }
+
+  /** Scene position → WGS84 degrees. */
+  toLatLng(p: Vector3) {
+    const t = this.tiles;
+    t.group.updateMatrixWorld(true);
+    const local = p.clone().applyMatrix4(new Matrix4().copy(t.group.matrixWorld).invert());
+    const c = t.ellipsoid.getPositionToCartographic(local, {} as { lat: number; lon: number });
+    return { lat: c.lat * MathUtils.RAD2DEG, lng: c.lon * MathUtils.RAD2DEG };
+  }
+
+  /** Terrain height under (x, z), if the tiles there are loaded. */
+  groundAt(x: number, z: number): number | undefined {
+    this.raycaster.set(new Vector3(x, 5000, z), DOWN);
+    return this.raycaster.intersectObject(this.tiles.group, true)[0]?.point.y;
+  }
+
+  private raycaster = new Raycaster();
 
   /** Google requires its logo and data attributions to be visible. */
   renderAttributions(el: HTMLElement) {
