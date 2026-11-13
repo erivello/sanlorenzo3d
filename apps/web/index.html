@@ -8,6 +8,7 @@
   <body>
     <div id="viewport"></div>
     <div id="hotspots"></div>
+    <div id="village-labels" hidden></div>
     <div id="loading">Caricamento della chiesa…</div>
     <div id="street"><div id="street-view"></div></div>
     <div id="veil"></div>
@@ -37,6 +38,16 @@
       <section class="exterior-only">
         <p>Il paese visto dall'alto. Ruota e avvicinati, poi entra in chiesa.</p>
         <button id="enter" type="button" class="primary">Entra in chiesa</button>
+        <div class="boundary-box">
+          <label><input id="boundary-toggle" type="checkbox" checked /> Confini del paese</label>
+          <p class="muted credit">
+            Località
+            <a href="https://www.istat.it/notizia/basi-territoriali-e-variabili-censuarie/" target="_blank" rel="noopener">ISTAT, censimento 2021</a>
+            (<a href="https://creativecommons.org/licenses/by/4.0/deed.it" target="_blank" rel="noopener">CC BY 4.0</a>, sezioni unite);
+            vie da
+            <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a> (ODbL)
+          </p>
+        </div>
         <div class="street-box">
           <button id="street-church" type="button" class="secondary" disabled>
             Davanti alla chiesa (Street View)

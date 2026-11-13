@@ -2,6 +2,7 @@ import { site, type GoogleTiles } from "./exterior";
 import type { CameraPose, ChurchScene } from "./scene";
 import type { Vec3 } from "./content";
 import { dirOf, type Pano, type StreetView } from "./streetview";
+import type { VillageBoundary } from "./boundary";
 
 export type Mode = "exterior" | "interior";
 
@@ -43,6 +44,18 @@ export class Modes {
   private street?: StreetView;
   /** True while the Street View panorama covers the 3D view. */
   streetOpen = false;
+
+  private boundary?: VillageBoundary;
+
+  attachBoundary(boundary: VillageBoundary) {
+    this.boundary = boundary;
+    this.syncBoundary();
+  }
+
+  /** The boundary shows over the 3D village only (not inside, not in Street View). */
+  private syncBoundary() {
+    if (this.boundary) this.boundary.active = this.mode === "exterior" && !this.streetOpen;
+  }
 
   attachStreetView(street: StreetView) {
     this.street = street;
@@ -91,6 +104,7 @@ export class Modes {
   private setStreet(on: boolean) {
     this.streetOpen = on;
     document.body.dataset.street = on ? "on" : "off";
+    this.syncBoundary();
   }
 
   /** Arrive over the village from high above. */
@@ -148,6 +162,7 @@ export class Modes {
     if (this.tiles) this.tiles.visible = outside;
     if (this.street) this.street.visible = outside;
     this.world.setClipping(outside ? 1 : 0.01, outside ? 40000 : 1000);
+    this.syncBoundary();
   }
 
   private async fade(during: () => Promise<void>) {
