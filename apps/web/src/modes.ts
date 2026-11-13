@@ -1,12 +1,17 @@
-import type { GoogleTiles } from "./exterior";
+import { site, type GoogleTiles } from "./exterior";
 import type { CameraPose, ChurchScene } from "./scene";
+import type { Vec3 } from "./content";
 
 export type Mode = "exterior" | "interior";
 
-// Exterior poses in metres, church at the origin (see exterior.ts).
-const VILLAGE_HIGH: CameraPose = { position: [-1300, 950, 1500], target: [0, 0, 0] };
-const VILLAGE: CameraPose = { position: [-130, 75, 150], target: [0, 10, 0] };
-const DOORSTEP: CameraPose = { position: [-30, 8, 35], target: [0, 6, 0] };
+// Exterior poses in metres (+x east, -z north, ground ≈ y 0), relative to the church.
+// The hill rises to the south, so the camera looks at the church from the north-west,
+// with the slopes as a backdrop.
+const [cx, cy, cz] = site.church_offset_m;
+const at = (x: number, y: number, z: number): Vec3 => [cx + x, cy + y, cz + z];
+const VILLAGE_HIGH: CameraPose = { position: at(-1100, 900, -1300), target: at(0, 0, 0) };
+const VILLAGE: CameraPose = { position: at(-160, 95, -160), target: at(0, 0, 0) };
+const DOORSTEP: CameraPose = { position: at(-35, 18, -35), target: at(0, 3, 0) };
 
 const FADE_MS = 500;
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));

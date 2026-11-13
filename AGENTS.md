@@ -30,6 +30,11 @@ Due modalità (`src/modes.ts`, `body[data-mode]`):
 Senza `VITE_GOOGLE_MAPS_API_KEY`, o se il tileset radice fallisce (chiave/fatturazione),
 la modalità exterior viene disattivata e il viewer resta sull'interno con un avviso.
 Attribuzioni Google (logo + copyright) sempre visibili in exterior: obbligo dei termini d'uso.
+Nota: a San Lorenzo la Map Tiles API fornisce solo terreno + satellite (edifici piatti), anche se
+Google Earth web mostra il 3D completo. Vedi `content/site.yaml`.
+
+Debug: in dev `window.__sl3d = { world, tiles, modes }`. Il rendering usa `requestAnimationFrame`
+(anche la coda download delle tiles): in un browser/pannello nascosto si ferma tutto.
 
 ## Comandi
 

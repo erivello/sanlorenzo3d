@@ -6,6 +6,16 @@ import { ChurchScene, type CameraPose } from "./scene";
 import { setupTour } from "./tour";
 
 const world = new ChurchScene(document.getElementById("viewport")!);
+
+// Keep the camera target in the part of the screen not covered by the panel.
+const panel = document.getElementById("panel")!;
+const updateInsets = () => {
+  const r = panel.getBoundingClientRect();
+  const side = window.innerWidth > 640;
+  world.setInsets(side ? { left: r.right } : { bottom: window.innerHeight - r.top });
+};
+new ResizeObserver(updateInsets).observe(panel);
+window.addEventListener("resize", updateInsets);
 const interiorOverview: CameraPose = world.pose();
 const loading = document.getElementById("loading")!;
 const notice = document.getElementById("notice")!;
@@ -39,6 +49,8 @@ splatReady.then(() => {
   loading.remove();
   if (modes.hasExterior) modes.flyIntoVillage();
 });
+
+if (import.meta.env.DEV) Object.assign(window, { __sl3d: { world, tiles, modes } });
 
 // Authoring helpers (see AGENTS.md → Convenzioni 3D)
 window.addEventListener("keydown", (e) => {

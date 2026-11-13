@@ -40,16 +40,36 @@ export class ChurchScene {
     this.controls.enableDamping = true;
     this.controls.target.set(0, 0, 0);
 
-    const resize = () => {
-      const { clientWidth: w, clientHeight: h } = container;
-      this.renderer.setSize(w, h);
-      this.camera.aspect = w / h;
-      this.camera.updateProjectionMatrix();
-    };
-    window.addEventListener("resize", resize);
-    resize();
+    window.addEventListener("resize", () => this.resize());
+    this.resize();
 
     this.renderer.setAnimationLoop((t) => this.tick(t));
+  }
+
+  /**
+   * Screen area covered by UI (CSS px). The projection centre is shifted so the
+   * camera target appears in the middle of the free area, not behind the panel.
+   */
+  setInsets(insets: { left?: number; bottom?: number }) {
+    this.insets = { left: insets.left ?? 0, bottom: insets.bottom ?? 0 };
+    this.resize();
+  }
+
+  private insets = { left: 0, bottom: 0 };
+
+  private resize() {
+    const el = this.renderer.domElement.parentElement!;
+    const { clientWidth: w, clientHeight: h } = el;
+    const { left, bottom } = this.insets;
+    this.renderer.setSize(w, h);
+    // Virtual view of (w+left)×(h+bottom); render its sub-rect so the centre moves
+    // right by left/2 and up by bottom/2.
+    const fullW = w + left;
+    const fullH = h + bottom;
+    this.camera.aspect = fullW / fullH;
+    if (left || bottom) this.camera.setViewOffset(fullW, fullH, 0, bottom, w, h);
+    else this.camera.clearViewOffset();
+    this.camera.updateProjectionMatrix();
   }
 
   async loadSplat(url = import.meta.env.VITE_SPLAT_URL || DEFAULT_SPLAT) {

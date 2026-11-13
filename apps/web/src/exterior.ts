@@ -17,6 +17,7 @@ interface Site {
   lat: number;
   lon: number;
   elevation_m: number;
+  church_offset_m: [number, number, number];
 }
 
 export const site = parse(siteYaml) as Site;
@@ -26,6 +27,8 @@ export const site = parse(siteYaml) as Site;
 const GEOID_OFFSET_M = 47;
 
 const DRACO_DECODER = "https://www.gstatic.com/draco/versioned/decoders/1.5.7/";
+// Google logo for dark backgrounds, served by Google for Maps attribution.
+const GOOGLE_LOGO = "https://maps.gstatic.com/mapfiles/api-3/images/google_white5_hdpi.png";
 
 /**
  * Google Photorealistic 3D Tiles, re-centred so the church sits at the
@@ -40,7 +43,7 @@ export class GoogleTiles {
     onError: (error: unknown) => void,
   ) {
     const tiles = new TilesRenderer();
-    tiles.registerPlugin(new GoogleCloudAuthPlugin({ apiToken: apiKey, autoRefreshToken: true }));
+    tiles.registerPlugin(new GoogleCloudAuthPlugin({ apiToken: apiKey, autoRefreshToken: true, logoUrl: GOOGLE_LOGO }));
     tiles.registerPlugin(
       new GLTFExtensionsPlugin({
         dracoLoader: new DRACOLoader().setDecoderPath(DRACO_DECODER),

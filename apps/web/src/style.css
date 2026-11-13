@@ -151,7 +151,7 @@ button.link {
   text-shadow: 0 0 3px #000;
   pointer-events: none;
 }
-#attribution img { height: 16px; }
+#attribution img { height: 18px; }
 
 #notice {
   position: fixed;

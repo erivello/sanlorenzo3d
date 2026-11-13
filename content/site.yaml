@@ -4,8 +4,15 @@ address: Via San Lorenzo, San Lorenzo, Vittorio Veneto (TV)
 # WGS84, from Google Earth (approximate, refine on the tiles when aligning the splat)
 lat: 45.98892379
 lon: 12.2712306
-# Ground elevation around the church, metres above sea level (approximate, from Google Earth)
-elevation_m: 349
+# Ground elevation at the church, metres above sea level.
+# Google Earth showed ~349 m nearby; calibrated to 361 so the ground of the Map Tiles
+# API mesh sits at y≈0 in the viewer (raycast on 2026-11-13).
+elevation_m: 361
+# Church centre relative to (lat, lon), in viewer metres: +x east, -z north.
+church_offset_m: [8, 0, -8]
 google_3d_tiles:
-  coverage: true        # verified in Google Earth on 2026-11-13, imagery dated 2025-11-07
-  notes: Church and bell tower are clearly modelled; good base for the exterior and the fly-in.
+  # Google Earth (web) shows a full 3D model of church and bell tower (imagery 2025-11-07),
+  # but the Map Tiles API currently serves only terrain + satellite imagery here
+  # (attribution "Google; Airbus", buildings flat). Checked 2026-11-13; Venice has full 3D.
+  earth_web_3d: true
+  map_tiles_api_3d: false
