@@ -20,7 +20,16 @@ apps/web/public/splats/    splat compressi serviti in dev (git-ignored, tranne .
 ```
 
 Un solo motore 3D: **three.js**. Gli splat sono renderizzati con Spark (`SparkRenderer` + `SplatMesh`).
-Fase futura: Google 3D Tiles via `3d-tiles-renderer` nella stessa scena three.js (no Cesium).
+Il paese usa Google Photorealistic 3D Tiles via `3d-tiles-renderer` nella stessa scena (no Cesium).
+
+Due modalità (`src/modes.ts`, `body[data-mode]`):
+- **exterior**: tiles Google visibili, splat nascosto, unità = metri, chiesa nell'origine
+  (`ReorientationPlugin` su `content/site.yaml`, quota ellissoidica = s.l.m. + ~47 m di geoide).
+  Si arriva con un volo dall'alto; "Entra in chiesa" vola alla porta e dissolve nell'interno.
+- **interior**: splat + POI. Unità della ricostruzione.
+Senza `VITE_GOOGLE_MAPS_API_KEY`, o se il tileset radice fallisce (chiave/fatturazione),
+la modalità exterior viene disattivata e il viewer resta sull'interno con un avviso.
+Attribuzioni Google (logo + copyright) sempre visibili in exterior: obbligo dei termini d'uso.
 
 ## Comandi
 

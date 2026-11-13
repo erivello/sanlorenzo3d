@@ -24,6 +24,7 @@ export class ChurchScene {
     duration: number;
   };
   private frameListeners: Array<() => void> = [];
+  private beforeFrameListeners: Array<() => void> = [];
 
   constructor(container: HTMLElement) {
     this.camera = new THREE.PerspectiveCamera(60, 1, 0.01, 1000);
@@ -61,8 +62,28 @@ export class ChurchScene {
     return splat;
   }
 
+  /** Runs after render (DOM overlays). */
   onFrame(fn: () => void) {
     this.frameListeners.push(fn);
+  }
+
+  /** Runs before render (scene updates, e.g. tiles streaming). */
+  beforeFrame(fn: () => void) {
+    this.beforeFrameListeners.push(fn);
+  }
+
+  /** Near/far planes: tiny for the interior splat, kilometres for the village. */
+  setClipping(near: number, far: number) {
+    this.camera.near = near;
+    this.camera.far = far;
+    this.camera.updateProjectionMatrix();
+  }
+
+  /** Jump without animation. */
+  setPose(pose: CameraPose) {
+    this.flight = undefined;
+    this.camera.position.set(...pose.position);
+    this.controls.target.set(...pose.target);
   }
 
   pose(): CameraPose {
@@ -117,6 +138,7 @@ export class ChurchScene {
       if (t === 1) this.flight = undefined;
     }
     this.controls.update();
+    for (const fn of this.beforeFrameListeners) fn();
     this.renderer.render(this.scene, this.camera);
     for (const fn of this.frameListeners) fn();
   }

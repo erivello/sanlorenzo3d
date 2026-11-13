@@ -98,7 +98,78 @@ details a { color: var(--accent); }
 }
 .tour-nav button:hover { border-color: var(--accent); }
 
+/* Modes: body[data-mode] = exterior | interior; body[data-exterior=off] when tiles are unavailable */
+body[data-mode="exterior"] .interior-only,
+body[data-mode="exterior"] #hotspots,
+body[data-mode="interior"] .exterior-only,
+body[data-mode="interior"] #attribution,
+body[data-exterior="off"] #exit { display: none; }
+
+.exterior-only p { margin: 0 0 12px; line-height: 1.5; color: var(--muted); }
+button.primary {
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #1a1209;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+button.link {
+  margin: 0 0 8px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+#veil {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+#veil.on { opacity: 1; }
+
+#attribution {
+  position: fixed;
+  right: 8px;
+  bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 60vw;
+  font-size: 0.7rem;
+  color: #fff;
+  text-shadow: 0 0 3px #000;
+  pointer-events: none;
+}
+#attribution img { height: 16px; }
+
+#notice {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  max-width: 340px;
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(60, 40, 10, 0.92);
+  color: var(--warn);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
 @media (max-width: 640px) {
+  #notice { left: 12px; right: 12px; top: 12px; max-width: none; }
+  #attribution { bottom: calc(45vh + 20px); }
   #panel {
     top: auto;
     left: 12px;
