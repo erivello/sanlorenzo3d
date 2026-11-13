@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { Line2 } from "three/addons/lines/Line2.js";
 import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 import { LineMaterial } from "three/addons/lines/LineMaterial.js";
+import borghiJson from "../../../content/borghi.geojson?raw";
 import boundaryJson from "../../../content/boundary.geojson?raw";
 import type { GoogleTiles } from "./exterior";
 import type { ChurchScene } from "./scene";
@@ -12,7 +13,9 @@ import type { ChurchScene } from "./scene";
  * - a golden outline draped on the terrain around each area;
  * - everything outside dimmed and desaturated, so the village "lights up"
  *   (a mask texture sampled in the Google tiles' fragment shader);
- * - a floating name label per area, hidden when you get close.
+ * - a floating name label per area, hidden when you get close;
+ * - the names of the borghi (content/borghi.geojson, OpenStreetMap) written
+ *   high above them, with a thin stem down to the ground.
  */
 
 type Ring = [number, number][];
@@ -28,13 +31,19 @@ interface Feature {
   geometry: { type: "Polygon"; coordinates: Ring[] } | { type: "MultiPolygon"; coordinates: Ring[][] };
 }
 const features = (JSON.parse(boundaryJson) as { features: Feature[] }).features;
+const borghi = (
+  JSON.parse(borghiJson) as { features: { properties: { name: string }; geometry: { coordinates: [number, number] } }[] }
+).features;
 /** Outer rings only: the areas have no holes worth drawing. */
 const outerRings = (f: Feature): Ring[] =>
   f.geometry.type === "Polygon" ? [f.geometry.coordinates[0]] : f.geometry.coordinates.map((p) => p[0]);
 
 interface Label {
   el: HTMLElement;
-  anchor: THREE.Vector3;
+  ground: THREE.Vector3; // y snapped to the terrain
+  height: number; // metres above the ground
+  hideWithin: number; // horizontal metres
+  stem?: HTMLElement;
 }
 
 const STEP_M = 4; // densify edges so the outline follows the terrain
@@ -44,6 +53,8 @@ const MASK_MAX_PX = 2048;
 const MASK_BLUR_PX = 6; // soft edge between lit and dimmed area
 const LABEL_HEIGHT_M = 45;
 const LABEL_HIDE_WITHIN_M = 220;
+const BORGO_HEIGHT_M = 30;
+const BORGO_HIDE_WITHIN_M = 40;
 const REBUILD_MIN_MS = 400;
 const FADE_PER_S = 3;
 
@@ -145,7 +156,15 @@ export class VillageBoundary {
       const c = area.getCenter(new THREE.Vector2());
       const { name, main, point, places = [] } = f.properties;
       this.addLabel(name, main, point ? this.tiles.toScene(point[1], point[0]) : new THREE.Vector3(c.x, 0, c.y));
-      for (const p of places) this.addLabel(p.name, false, this.tiles.toScene(p.point[1], p.point[0]));
+      // A borgo with the same name (e.g. "Borgo Castagnè") replaces the locality label.
+      for (const p of places) {
+        if (!borghi.some((b) => b.properties.name.includes(p.name)))
+          this.addLabel(p.name, false, this.tiles.toScene(p.point[1], p.point[0]));
+      }
+    }
+    for (const b of borghi) {
+      const [lng, lat] = b.geometry.coordinates;
+      this.addBorgo(b.properties.name, this.tiles.toScene(lat, lng));
     }
     box.expandByScalar(MASK_MARGIN_M);
     this.buildMask(box);
@@ -159,7 +178,23 @@ export class VillageBoundary {
     el.className = main ? "village-label main" : "village-label";
     el.textContent = name;
     this.labelLayer.append(el);
-    this.labels.push({ el, anchor: anchor.setY(0) });
+    this.labels.push({
+      el,
+      ground: anchor.setY(0),
+      height: LABEL_HEIGHT_M,
+      hideWithin: LABEL_HIDE_WITHIN_M,
+    });
+  }
+
+  private addBorgo(name: string, ground: THREE.Vector3) {
+    const el = document.createElement("div");
+    el.className = "borgo-label";
+    const text = document.createElement("span");
+    text.textContent = name;
+    const stem = document.createElement("i");
+    el.append(text, stem);
+    this.labelLayer.append(el);
+    this.labels.push({ el, ground: ground.setY(0), height: BORGO_HEIGHT_M, hideWithin: BORGO_HIDE_WITHIN_M, stem });
   }
 
     private buildMask(box: THREE.Box2) {
@@ -245,7 +280,7 @@ uniform float uSlDim;
   private drape(now: number) {
     this.groundDirty = false;
     this.lastRebuild = now;
-    for (const l of this.labels) l.anchor.y = (this.tiles.groundAt(l.anchor.x, l.anchor.z) ?? 0) + LABEL_HEIGHT_M;
+    for (const l of this.labels) l.ground.y = this.tiles.groundAt(l.ground.x, l.ground.z) ?? l.ground.y;
 
     this.rings.forEach((ring, i) => {
       for (const p of ring) p.y = this.tiles.groundAt(p.x, p.z) ?? p.y;
@@ -272,11 +307,16 @@ uniform float uSlDim;
   private placeLabel() {
     if (!this.shown) return;
     const cam = this.world.camera.position;
-    for (const { el, anchor } of this.labels) {
-      const near = Math.hypot(cam.x - anchor.x, cam.z - anchor.z) < LABEL_HIDE_WITHIN_M;
-      const at = near ? undefined : this.world.project(anchor.toArray());
-      el.hidden = !at;
-      if (at) el.style.transform = `translate(${at.x}px, ${at.y}px) translate(-50%, -100%)`;
+    for (const { el, ground, height, hideWithin, stem } of this.labels) {
+      const near = Math.hypot(cam.x - ground.x, cam.z - ground.z) < hideWithin;
+      const top = near ? undefined : this.world.project([ground.x, ground.y + height, ground.z]);
+      el.hidden = !top;
+      if (!top) continue;
+      el.style.transform = `translate(${top.x}px, ${top.y}px) translate(-50%, -100%)`;
+      if (stem) {
+        const foot = this.world.project(ground.toArray());
+        stem.style.height = `${foot ? Math.max(0, foot.y - top.y) : 0}px`;
+      }
     }
   }
 }
