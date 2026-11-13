@@ -14,6 +14,7 @@ data/      (git-ignored)   workspace pipeline: frames, COLMAP, output training
 pipeline/                  script shell Mac (M2): video → frames → SfM → splat → compressione
 content/pois/*.md          schede punti di interesse (frontmatter YAML + testo markdown)
 content/site.yaml          geolocalizzazione della chiesa (lat/lon/quota) e copertura Google 3D Tiles
+content/boundary.geojson   confine del paese: località ISTAT 2021 (CC BY 4.0) + vie che le collegano (OSM, ODbL), un'unica area, da pipeline/istat_boundary.py
 apps/web/                  viewer: Vite + TypeScript + three.js + Spark (@sparkjsdev/spark)
 apps/web/public/splats/    splat compressi serviti in dev (git-ignored, tranne .gitkeep)
 .claude/agents/            subagent specializzati (vedi sotto)
@@ -32,6 +33,10 @@ Due modalità (`src/modes.ts`, `body[data-mode]`):
 Senza `VITE_GOOGLE_MAPS_API_KEY`, o se il tileset radice fallisce (chiave/fatturazione),
 la modalità exterior viene disattivata e il viewer resta sull'interno con un avviso.
 Attribuzioni Google (logo + copyright) sempre visibili in exterior: obbligo dei termini d'uso.
+
+**Confine del paese** (`src/boundary.ts`): contorno dorato appoggiato al terreno, esterno scurito
+(maschera campionata nello shader delle tiles, agganciata su `load-model` concatenando `onBeforeCompile`),
+etichetta col nome. Solo in exterior e fuori da Street View. Citare sempre ISTAT e OSM + licenze nel pannello.
 
 **Street View** (`src/streetview.ts`, richiede *Maps JavaScript API* abilitata sulla stessa chiave):
 copertura scoperta a runtime percorrendo i link tra panorami a partire da quello ufficiale Google più

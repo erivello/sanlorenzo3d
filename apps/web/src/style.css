@@ -252,3 +252,31 @@ button.secondary:disabled { opacity: 0.45; cursor: default; }
 @media (max-width: 640px) {
   #street { inset: 0 0 calc(45vh + 12px) 0; }
 }
+
+/* Village boundary */
+#village-labels { position: fixed; inset: 0; pointer-events: none; }
+.village-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(20, 16, 12, 0.6);
+  border: 1px solid rgba(255, 213, 74, 0.7);
+  color: #ffd54a;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+.village-label.main { font-size: 1.05rem; }
+.village-label[hidden],
+#village-labels[hidden],
+body:not([data-mode="exterior"]) #village-labels,
+body[data-street="on"] #village-labels { display: none; }
+.boundary-box { margin-top: 14px; }
+.boundary-box label { display: flex; gap: 8px; align-items: center; cursor: pointer; }
+.boundary-box .credit { margin: 4px 0 0 24px; font-size: 0.78rem; }
+.boundary-box .credit a { color: var(--muted); }

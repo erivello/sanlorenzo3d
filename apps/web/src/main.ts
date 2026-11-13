@@ -1,5 +1,6 @@
 import "./style.css";
 import { pois } from "./content";
+import { VillageBoundary } from "./boundary";
 import { GoogleTiles } from "./exterior";
 import { setupKeyboard } from "./keyboard";
 import { CHURCH, Modes } from "./modes";
@@ -44,6 +45,16 @@ modes = new Modes(world, interiorOverview, tiles);
 if (!tiles) document.body.dataset.exterior = "off";
 
 setupTour(world, pois, interiorOverview);
+
+// --- Village boundary (ISTAT) ------------------------------------------------
+const boundary = tiles
+  ? new VillageBoundary(world, tiles, document.getElementById("village-labels")!)
+  : undefined;
+if (boundary) {
+  modes.attachBoundary(boundary);
+  const toggle = document.getElementById("boundary-toggle") as HTMLInputElement;
+  toggle.onchange = () => (boundary.on = toggle.checked);
+}
 
 // --- Street View -----------------------------------------------------------
 const street = tiles && apiKey ? new StreetView(world, tiles, apiKey) : undefined;
@@ -112,7 +123,7 @@ splatReady.then(() => {
   if (modes.hasExterior) modes.flyIntoVillage();
 });
 
-if (import.meta.env.DEV) Object.assign(window, { __sl3d: { world, tiles, modes, street } });
+if (import.meta.env.DEV) Object.assign(window, { __sl3d: { world, tiles, modes, street, boundary } });
 
 // Authoring helpers (see AGENTS.md → Convenzioni 3D)
 window.addEventListener("keydown", (e) => {
