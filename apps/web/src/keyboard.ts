@@ -39,6 +39,8 @@ export function setupKeyboard(
   world: ChurchScene,
   /** Movement speed in scene units per second for the current mode/position. */
   speed: () => number,
+  /** False while another view (e.g. Street View) owns the keyboard. */
+  enabled: () => boolean = () => true,
 ) {
   const input: Input = {
     forward: false, back: false, left: false, right: false,
@@ -50,7 +52,7 @@ export function setupKeyboard(
     e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
 
   window.addEventListener("keydown", (e) => {
-    if (e.metaKey || e.ctrlKey || e.altKey || isTyping(e)) return;
+    if (e.metaKey || e.ctrlKey || e.altKey || isTyping(e) || !enabled()) return;
     fast = e.shiftKey;
     const action = BINDINGS[e.code];
     if (!action) return;

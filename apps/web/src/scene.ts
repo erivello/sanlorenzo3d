@@ -120,9 +120,9 @@ export class ChurchScene {
     this.flight = { from: this.pose(), to, start: performance.now(), duration };
   }
 
-  /** World-space point on the splat under a screen position, if any. */
-  pick(clientX: number, clientY: number): THREE.Vector3 | undefined {
-    if (!this.splat) return;
+  /** World-space point on `object` (default: the splat) under a screen position, if any. */
+  pick(clientX: number, clientY: number, object: THREE.Object3D | undefined = this.splat) {
+    if (!object) return;
     const rect = this.renderer.domElement.getBoundingClientRect();
     const ndc = new THREE.Vector2(
       ((clientX - rect.left) / rect.width) * 2 - 1,
@@ -130,7 +130,7 @@ export class ChurchScene {
     );
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(ndc, this.camera);
-    return raycaster.intersectObject(this.splat, false)[0]?.point;
+    return raycaster.intersectObject(object, object !== this.splat)[0]?.point;
   }
 
   /** Project a world point to CSS pixels; undefined when behind the camera. */
