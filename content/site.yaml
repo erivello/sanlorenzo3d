@@ -1,0 +1,11 @@
+# Geolocation of the church, used to place the splat on Google Photorealistic 3D Tiles.
+name: Chiesa parrocchiale di San Lorenzo in Montagna
+address: Via San Lorenzo, San Lorenzo, Vittorio Veneto (TV)
+# WGS84, from Google Earth (approximate, refine on the tiles when aligning the splat)
+lat: 45.98892379
+lon: 12.2712306
+# Ground elevation around the church, metres above sea level (approximate, from Google Earth)
+elevation_m: 349
+google_3d_tiles:
+  coverage: true        # verified in Google Earth on 2026-11-13, imagery dated 2025-11-07
+  notes: Church and bell tower are clearly modelled; good base for the exterior and the fly-in.

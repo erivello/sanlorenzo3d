@@ -13,6 +13,7 @@ captures/  (git-ignored)   video/foto grezze dal telefono (Redmi Note 12 Pro)
 data/      (git-ignored)   workspace pipeline: frames, COLMAP, output training
 pipeline/                  script shell Mac (M2): video → frames → SfM → splat → compressione
 content/pois/*.md          schede punti di interesse (frontmatter YAML + testo markdown)
+content/site.yaml          geolocalizzazione della chiesa (lat/lon/quota) e copertura Google 3D Tiles
 apps/web/                  viewer: Vite + TypeScript + three.js + Spark (@sparkjsdev/spark)
 apps/web/public/splats/    splat compressi serviti in dev (git-ignored, tranne .gitkeep)
 .claude/agents/            subagent specializzati (vedi sotto)
