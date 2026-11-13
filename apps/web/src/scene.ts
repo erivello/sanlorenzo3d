@@ -99,6 +99,10 @@ export class ChurchScene {
     this.camera.updateProjectionMatrix();
   }
 
+  cancelFlight() {
+    this.flight = undefined;
+  }
+
   /** Jump without animation. */
   setPose(pose: CameraPose) {
     this.flight = undefined;

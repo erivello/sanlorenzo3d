@@ -1,6 +1,7 @@
 import "./style.css";
 import { pois } from "./content";
 import { GoogleTiles } from "./exterior";
+import { setupKeyboard } from "./keyboard";
 import { Modes } from "./modes";
 import { ChurchScene, type CameraPose } from "./scene";
 import { setupTour } from "./tour";
@@ -41,6 +42,13 @@ modes = new Modes(world, interiorOverview, tiles);
 if (!tiles) document.body.dataset.exterior = "off";
 
 setupTour(world, pois, interiorOverview);
+
+setupKeyboard(world, () =>
+  modes.mode === "exterior"
+    ? // ~0.8× height above the church ground: slow near roofs, fast up high.
+      Math.max(5, world.camera.position.y * 0.8)
+    : 1,
+);
 
 document.getElementById("enter")!.onclick = () => modes.enterChurch();
 document.getElementById("exit")!.onclick = () => modes.exitToVillage();
