@@ -14,10 +14,21 @@ captures/<video>.mp4
 brew install ffmpeg colmap
 ```
 
-**Brush** (training Gaussian Splatting in Metal): scarica la release macOS da
-https://github.com/ArthurBrussee/brush/releases e metti l'eseguibile nel PATH come `brush`
-(oppure imposta `BRUSH=/percorso/brush`). Verifica i flag con `brush --help`: lo script
-`03_train.sh` passa gli argomenti extra così come sono.
+**Brush** (training Gaussian Splatting in Metal), testato con la **0.3.0**:
+
+```bash
+V=0.3.0; F=brush-app-aarch64-apple-darwin.tar.xz
+curl -LO https://github.com/ArthurBrussee/brush/releases/download/v$V/$F
+curl -LO https://github.com/ArthurBrussee/brush/releases/download/v$V/$F.sha256
+shasum -a 256 -c $F.sha256          # deve dire OK
+mkdir -p ~/.local/opt/brush-$V ~/.local/bin && tar -xJf $F -C ~/.local/opt/brush-$V --strip-components 1
+ln -sf ~/.local/opt/brush-$V/brush_app ~/.local/bin/brush   # ~/.local/bin deve essere nel PATH
+brush --version
+```
+
+(oppure imposta `BRUSH=/percorso/brush`). `03_train.sh` passa gli argomenti extra così come sono
+(`brush --help` per l'elenco); di suo limita gli splat a 2 milioni (`--max-splats` per cambiarlo).
+`--with-viewer` apre una finestra per seguire il training dal vivo.
 
 La compressione usa `npx @playcanvas/splat-transform` (nessuna installazione).
 
