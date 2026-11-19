@@ -1,7 +1,7 @@
 ---
 id: san-lorenzo
 title: San Lorenzo, il patrono
-order: 3
+order: 10
 status: bozza
 anchor: [-0.3, 0, 0]
 camera:
