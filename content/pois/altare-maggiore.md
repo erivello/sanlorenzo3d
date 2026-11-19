@@ -1,17 +1,19 @@
 ---
 id: altare-maggiore
 title: Altare maggiore
-order: 2
-status: bozza
+order: 7
+status: da-verificare
 anchor: [0.3, 0, 0]
 camera:
   position: [1.2, 0.3, 0.6]
   target: [0.3, 0, 0]
-sources: []
+sources:
+  - title: "Osservazione da fotografie degli interni (solo aspetto visibile, nessuna informazione storica)"
+    note: "foto fornite da un residente, 2026-11-19"
 todo:
   - Materiale e datazione dell'altare
   - Opere d'arte presenti nel presbiterio e loro autori
 ---
-*Scheda segnaposto — contenuto da scrivere con le fonti.*
+*Scheda provvisoria: descrive solo ciò che si vede. Autore, datazione e storia sono da verificare con la parrocchia o con fonti pubblicate.*
 
-Qui verrà descritto l'altare maggiore. Nella prima fase la scheda conterrà solo ciò che si osserva nella scansione 3D; attribuzioni e date arriveranno quando saranno documentate.
+Il presbiterio è rialzato di alcuni gradini rispetto alla navata e separato da un arco; è coperto da una volta a crociera. Al centro si trova l'altare. Attribuzioni e date arriveranno quando saranno documentate.
