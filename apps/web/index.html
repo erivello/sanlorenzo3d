@@ -61,6 +61,18 @@
             vie e nomi dei borghi da
             <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a> (ODbL)
           </p>
+          <button id="boundary-edit" type="button" class="link dev-only">Modifica confine</button>
+          <div id="boundary-edit-bar" class="edit-bar" hidden>
+            <p class="muted">
+              Trascina i punti · clic su un lato per aggiungerne uno · <kbd>Alt</kbd>+clic su un punto per toglierlo ·
+              <kbd>⌘Z</kbd> annulla
+            </p>
+            <p id="boundary-edit-status" class="edit-status"></p>
+            <div class="actions">
+              <button id="boundary-save" type="button" class="primary">Salva</button>
+              <button id="boundary-cancel" type="button" class="secondary">Annulla</button>
+            </div>
+          </div>
         </div>
         <div class="houses-box">
           <label><input id="houses-toggle" type="checkbox" checked /> Nomi delle case</label>

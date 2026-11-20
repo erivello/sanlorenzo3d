@@ -48,6 +48,11 @@ Attribuzioni delle immagini e del terreno sempre visibili in exterior.
 **Confine del paese** (`src/boundary.ts`): contorno dorato appoggiato al terreno, esterno scurito
 (maschera campionata nello shader della superficie, agganciata con `ground.onMaterial` concatenando `onBeforeCompile`),
 etichetta col nome, nomi dei borghi sospesi in alto con un filo fino al terreno. Solo in exterior e fuori da Street View. Citare sempre ISTAT e OSM + licenze nel pannello.
+Modifica a mano (solo dev, `src/boundaryEditor.ts`): "Modifica confine" nel pannello → trascina i punti,
+clic su un lato per aggiungerne uno, Alt+clic su un punto per toglierlo, ⌘Z annulla; "Salva" scrive
+`content/boundary.geojson` via `/__sl3d/boundary` (plugin in `vite.config.ts`, file escluso dal watcher)
+e aggiunge alle `sources` la nota del ritocco con la data. **Rilanciare `pipeline/istat_boundary.py`
+rigenera il file e cancella i ritocchi a mano.** La maschera di scurimento si aggiorna al salvataggio.
 
 **Nomi delle case** (`src/houses.ts`): etichette sopra i tetti con nota facoltativa (clic sul nome),
 contorno dell'edificio OSM agganciato, visibili sotto ~600 m dalla camera, interruttore nel pannello.
@@ -65,7 +70,7 @@ Google (termini d'uso): mai leggerle o salvarle; niente cache oltre la sessione.
 Nota: anche quando funzionava, a San Lorenzo la Map Tiles API forniva solo terreno + satellite
 (edifici piatti), come il terreno aperto. Vedi `content/site.yaml`.
 
-Debug: in dev `window.__sl3d = { world, tiles, terrain, modes, street, boundary, houses }`. Il rendering usa `requestAnimationFrame`
+Debug: in dev `window.__sl3d = { world, tiles, terrain, modes, street, boundary, boundaryEditor, houses }`. Il rendering usa `requestAnimationFrame`
 (anche la coda download delle tiles): in un browser/pannello nascosto si ferma tutto.
 
 ## Comandi

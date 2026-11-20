@@ -408,3 +408,24 @@ body:not([data-dev="on"]) .dev-only { display: none; }
 #house-editor .actions { display: flex; gap: 8px; align-items: center; }
 #house-editor .actions button { width: auto; margin: 0; padding: 6px 12px; }
 #house-editor [hidden] { display: none; }
+
+/* Boundary editor (dev) */
+#boundary-edit { margin: 6px 0 0 24px; padding: 0; font-size: 0.82rem; }
+#boundary-edit[hidden] { display: none; }
+.edit-bar {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(217, 163, 91, 0.12);
+  border: 1px solid rgba(217, 163, 91, 0.4);
+  font-size: 0.8rem;
+}
+.edit-bar[hidden] { display: none; }
+.edit-bar p { margin: 0 0 6px; }
+.edit-bar kbd { font-size: 0.72rem; }
+.edit-status { color: var(--accent); min-height: 1.2em; }
+.edit-bar .actions { display: flex; gap: 8px; }
+.edit-bar .actions button { width: auto; margin: 0; padding: 6px 14px; }
+/* While editing, keep labels out of the way of the points. */
+body[data-editing="boundary"] #village-labels,
+body[data-editing="boundary"] #house-labels { display: none; }

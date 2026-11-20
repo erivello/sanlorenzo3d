@@ -4,6 +4,7 @@ import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 import buildingsJson from "../../../content/buildings.geojson?raw";
 import type { Ground } from "./ground";
+import { pickGround } from "./pick";
 import type { ChurchScene } from "./scene";
 
 /**
@@ -215,25 +216,13 @@ export class HouseNames {
   /** Alt+click on the map: called by main.ts with the click position. */
   pickAt(clientX: number, clientY: number) {
     if (!this.editable || !this.shown) return;
-    const hit = this.raycast(clientX, clientY);
+    const hit = pickGround(this.world, this.ground, clientX, clientY);
     if (!hit) return;
     const { lat, lng } = this.ground.toLatLng(hit);
     const b = this.buildingAt(hit);
     const lngLat: LngLat = b ? b.centre : [lng, lat];
     const existing = b && this.houses.find((h) => h.properties.osm === b.osm);
     this.openEditor({ house: existing, lngLat, osm: b?.osm }, clientX, clientY);
-  }
-
-  private raycast(clientX: number, clientY: number) {
-    const rect = this.world.renderer.domElement.getBoundingClientRect();
-    const ndc = new THREE.Vector2(
-      ((clientX - rect.left) / rect.width) * 2 - 1,
-      -((clientY - rect.top) / rect.height) * 2 + 1,
-    );
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(ndc, this.world.camera);
-    // Hidden tiles (parents of loaded children) are still raycastable: skip them.
-    return raycaster.intersectObject(this.ground.object, true).find((h) => h.object.visible)?.point;
   }
 
   /** Building containing the point, else the nearest one within SNAP_M. */

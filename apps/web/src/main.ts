@@ -1,6 +1,7 @@
 import "./style.css";
 import { pois } from "./content";
-import { VillageBoundary } from "./boundary";
+import { VillageBoundary, initialBoundary, type BoundaryFeature } from "./boundary";
+import { BoundaryEditor } from "./boundaryEditor";
 import { HouseNames } from "./houses";
 import { GoogleTiles, site } from "./exterior";
 import type { Ground } from "./ground";
@@ -80,6 +81,27 @@ if (boundary) {
   toggle.onchange = () => (boundary.on = toggle.checked);
 }
 
+// Dev: edit the boundary on the terrain (boundaryEditor.ts). The file is not
+// watched (saving must not reload), so start from what is on disk now.
+const boundaryEditor =
+  boundary && tiles && import.meta.env.DEV
+    ? new BoundaryEditor(world, tiles, boundary, {
+        start: document.getElementById("boundary-edit") as HTMLButtonElement,
+        bar: document.getElementById("boundary-edit-bar")!,
+        save: document.getElementById("boundary-save") as HTMLButtonElement,
+        cancel: document.getElementById("boundary-cancel") as HTMLButtonElement,
+        status: document.getElementById("boundary-edit-status")!,
+      })
+    : undefined;
+if (boundary && boundaryEditor) {
+  fetch("/__sl3d/boundary")
+    .then((r) => r.json() as Promise<{ features: BoundaryFeature[] }>)
+    .then(({ features }) => {
+      if (JSON.stringify(features) !== JSON.stringify(initialBoundary)) boundary.setFeatures(features);
+    })
+    .catch((err) => console.warn("Confine dal disco non disponibile:", err));
+}
+
 // --- House names (private file, see houses.ts) ----------------------------------
 const houses = tiles
   ? new HouseNames(
@@ -96,7 +118,8 @@ if (houses) {
   if (houses.editable) {
     document.body.dataset.dev = "on";
     world.renderer.domElement.addEventListener("click", (e) => {
-      if (e.altKey && modes.mode === "exterior" && !modes.streetOpen) houses.pickAt(e.clientX, e.clientY);
+      if (e.altKey && modes.mode === "exterior" && !modes.streetOpen && !boundaryEditor?.active)
+        houses.pickAt(e.clientX, e.clientY);
     });
   }
 }
@@ -138,7 +161,7 @@ if (street) {
   canvas.addEventListener("pointerdown", (e) => (down = { x: e.clientX, y: e.clientY }));
   canvas.addEventListener("click", (e) => {
     if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 5) return;
-    if (modes.mode !== "exterior" || modes.streetOpen || e.shiftKey || e.altKey) return;
+    if (modes.mode !== "exterior" || modes.streetOpen || e.shiftKey || e.altKey || boundaryEditor?.active) return;
     const pano = street.pick(world.camera, canvas, e.clientX, e.clientY);
     if (!pano) return;
     const dir = world.camera.getWorldDirection(new Vector3());
@@ -170,7 +193,7 @@ splatReady.then(() => {
   if (modes.hasExterior) modes.flyIntoVillage();
 });
 
-if (import.meta.env.DEV) Object.assign(window, { __sl3d: { world, tiles, terrain, modes, street, boundary, houses } });
+if (import.meta.env.DEV) Object.assign(window, { __sl3d: { world, tiles, terrain, modes, street, boundary, boundaryEditor, houses } });
 
 // Authoring helpers (see AGENTS.md → Convenzioni 3D)
 window.addEventListener("keydown", (e) => {
