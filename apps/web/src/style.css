@@ -301,3 +301,15 @@ body[data-street="on"] #village-labels { display: none; }
 .boundary-box label { display: flex; gap: 8px; align-items: center; cursor: pointer; }
 .boundary-box .credit { margin: 4px 0 0 24px; font-size: 0.78rem; }
 .boundary-box .credit a { color: var(--muted); }
+
+.imagery-box { display: flex; gap: 8px; align-items: center; margin-top: 14px; color: var(--muted); font-size: 0.9rem; }
+.imagery-box select {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font: inherit;
+}
+.imagery-box[hidden] { display: none; }

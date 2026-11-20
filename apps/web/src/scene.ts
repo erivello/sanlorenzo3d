@@ -23,6 +23,12 @@ export class ChurchScene {
     start: number;
     duration: number;
   };
+  /**
+   * Splat renderer. Hide it when no splat is shown: while active it changes
+   * WebGL texture bindings behind three.js's back, and plain textured meshes
+   * (the open terrain) then render black.
+   */
+  readonly spark: SparkRenderer;
   private frameListeners: Array<() => void> = [];
   private beforeFrameListeners: Array<() => void> = [];
 
@@ -34,7 +40,8 @@ export class ChurchScene {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(this.renderer.domElement);
 
-    this.scene.add(new SparkRenderer({ renderer: this.renderer }));
+    this.spark = new SparkRenderer({ renderer: this.renderer });
+    this.scene.add(this.spark);
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;

@@ -1,4 +1,6 @@
-import { site, type GoogleTiles } from "./exterior";
+import { Color, Fog } from "three";
+import { site } from "./exterior";
+import type { Ground } from "./ground";
 import type { CameraPose, ChurchScene } from "./scene";
 import type { Vec3 } from "./content";
 import { dirOf, type Pano, type StreetView } from "./streetview";
@@ -16,6 +18,8 @@ const DOORSTEP: CameraPose = { position: at(-35, 18, -35), target: at(0, 3, 0) }
 /** Church centre in scene coordinates. */
 export const CHURCH: Vec3 = at(0, 0, 0);
 
+const SKY = new Color(0xb7c6d3);
+const HAZE = new Fog(0xb7c6d3, 2500, 6000);
 const FADE_MS = 500;
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -26,7 +30,7 @@ export class Modes {
   constructor(
     private world: ChurchScene,
     private interiorOverview: CameraPose,
-    private tiles?: GoogleTiles,
+    private tiles?: Ground,
   ) {
     document.body.dataset.mode = this.mode;
     if (tiles) {
@@ -159,6 +163,10 @@ export class Modes {
     document.body.dataset.mode = mode;
     const outside = mode === "exterior";
     if (this.world.splat) this.world.splat.visible = !outside;
+    this.world.spark.visible = !outside;
+    // Hazy sky outside; it also hides the edge of the terrain area (~5 km).
+    this.world.scene.background = outside ? SKY : null;
+    this.world.scene.fog = outside ? HAZE : null;
     if (this.tiles) this.tiles.visible = outside;
     if (this.street) this.street.visible = outside;
     this.world.setClipping(outside ? 1 : 0.01, outside ? 40000 : 1000);

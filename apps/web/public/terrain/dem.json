@@ -1,0 +1,14 @@
+{
+ "south": 45.94393998053054,
+ "north": 46.033907599469465,
+ "west": 12.206696779842124,
+ "east": 12.335764420157878,
+ "rows": 1001,
+ "cols": 1001,
+ "base": 87,
+ "scale": 0.1,
+ "height_at_site_m": 361.55,
+ "source": "TINITALY 1.1, INGV (Tarquini et al. 2023), https://doi.org/10.13127/tinitaly/1.1",
+ "license": "CC BY 4.0",
+ "changes": "ricampionato su griglia lat/lon di 10 m attorno al sito, quote al decimetro"
+}

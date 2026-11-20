@@ -4,7 +4,7 @@ import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 import borghiJson from "../../../content/borghi.geojson?raw";
 import boundaryJson from "../../../content/boundary.geojson?raw";
-import type { GoogleTiles } from "./exterior";
+import type { Ground } from "./ground";
 import type { ChurchScene } from "./scene";
 
 /**
@@ -86,15 +86,15 @@ export class VillageBoundary {
 
   constructor(
     private world: ChurchScene,
-    private tiles: GoogleTiles,
+    private tiles: Ground,
     private labelLayer: HTMLElement,
   ) {
     this.group.name = "village-boundary";
     this.group.visible = false;
     world.scene.add(this.group);
 
-    tiles.tiles.addEventListener("load-model", (e: { scene: THREE.Object3D }) => this.patch(e.scene));
-    tiles.tiles.addEventListener("tiles-load-end", () => (this.groundDirty = true));
+    tiles.onMaterial((m) => this.patchMaterial(m));
+    tiles.onChange(() => (this.groundDirty = true));
 
     let last = performance.now();
     world.beforeFrame(() => {
@@ -169,8 +169,6 @@ export class VillageBoundary {
     box.expandByScalar(MASK_MARGIN_M);
     this.buildMask(box);
 
-    // Patch tiles that loaded before the ring existed.
-    this.patch(this.tiles.tiles.group);
   }
 
   private addLabel(name: string, main: boolean | undefined, anchor: THREE.Vector3) {
@@ -228,15 +226,7 @@ export class VillageBoundary {
     this.uniforms.uSlMaskSize.value.copy(size);
   }
 
-  /** Inject the outside-dimming into tile materials (chains any existing hook). */
-  private patch(root: THREE.Object3D) {
-    root.traverse((o) => {
-      const mesh = o as THREE.Mesh;
-      if (!mesh.isMesh) return;
-      for (const m of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) this.patchMaterial(m);
-    });
-  }
-
+  /** Inject the outside-dimming into a surface material (chains any existing hook). */
   private patchMaterial(material: THREE.Material & { __slMask?: true }) {
     if (material.__slMask) return;
     material.__slMask = true;

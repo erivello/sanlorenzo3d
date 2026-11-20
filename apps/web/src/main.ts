@@ -1,11 +1,14 @@
 import "./style.css";
 import { pois } from "./content";
 import { VillageBoundary } from "./boundary";
-import { GoogleTiles } from "./exterior";
+import { GoogleTiles, site } from "./exterior";
+import type { Ground } from "./ground";
+import { availableImagery } from "./imagery";
 import { setupKeyboard } from "./keyboard";
 import { CHURCH, Modes } from "./modes";
 import { ChurchScene, type CameraPose } from "./scene";
 import { StreetView, headingOf } from "./streetview";
+import { OpenTerrain } from "./terrain";
 import { setupTour } from "./tour";
 import { Vector3 } from "three";
 
@@ -30,17 +33,37 @@ const splatReady = world.loadSplat().catch((err) => {
   throw err;
 });
 
+// --- Village surface -----------------------------------------------------------
+// Default: open terrain (TINITALY) + imagery (imagery.ts). VITE_TERRAIN=google
+// switches to Google Photorealistic 3D Tiles (blocked for EEA billing accounts).
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+const imagery = availableImagery(import.meta.env);
 let modes: Modes;
-const tiles = apiKey
-  ? new GoogleTiles(world, apiKey, (err) => {
-      console.error("Google 3D Tiles non disponibili:", err);
-      notice.textContent =
-        "Vista del paese non disponibile: controlla la chiave Google e che la fatturazione sia attiva.";
-      notice.hidden = false;
-      modes.disableExterior();
-    })
-  : undefined;
+const groundFailed = (what: string, hint: string) => (err: unknown) => {
+  console.error(`${what} non disponibile:`, err);
+  notice.textContent = `Vista del paese non disponibile: ${hint}`;
+  notice.hidden = false;
+  modes.disableExterior();
+};
+let terrain: OpenTerrain | undefined;
+let tiles: Ground | undefined;
+if (import.meta.env.VITE_TERRAIN === "google" && apiKey) {
+  tiles = new GoogleTiles(world, apiKey, groundFailed("Google 3D Tiles", "controlla la chiave Google e la fatturazione."));
+} else if (imagery.length) {
+  const preferred = imagery.find((i) => i.id === import.meta.env.VITE_IMAGERY) ?? imagery[0];
+  tiles = terrain = new OpenTerrain(
+    world,
+    site.lat,
+    site.lon,
+    site.elevation_m,
+    preferred,
+    groundFailed("Terreno", "impossibile caricare il modello del terreno."),
+  );
+  const select = document.getElementById("imagery") as HTMLSelectElement;
+  select.append(...imagery.map((i) => new Option(i.label, i.id, false, i === preferred)));
+  select.closest<HTMLElement>(".imagery-box")!.hidden = imagery.length < 2;
+  select.onchange = () => terrain!.setImagery(imagery.find((i) => i.id === select.value)!);
+}
 modes = new Modes(world, interiorOverview, tiles);
 if (!tiles) document.body.dataset.exterior = "off";
 
@@ -123,7 +146,7 @@ splatReady.then(() => {
   if (modes.hasExterior) modes.flyIntoVillage();
 });
 
-if (import.meta.env.DEV) Object.assign(window, { __sl3d: { world, tiles, modes, street, boundary } });
+if (import.meta.env.DEV) Object.assign(window, { __sl3d: { world, tiles, terrain, modes, street, boundary } });
 
 // Authoring helpers (see AGENTS.md → Convenzioni 3D)
 window.addEventListener("keydown", (e) => {
