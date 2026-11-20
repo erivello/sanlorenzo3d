@@ -1,11 +1,16 @@
 import "./style.css";
 import { pois } from "./content";
-import { VillageBoundary } from "./boundary";
-import { GoogleTiles } from "./exterior";
+import { VillageBoundary, initialBoundary, type BoundaryFeature } from "./boundary";
+import { BoundaryEditor } from "./boundaryEditor";
+import { HouseNames } from "./houses";
+import { GoogleTiles, site } from "./exterior";
+import type { Ground } from "./ground";
+import { availableImagery } from "./imagery";
 import { setupKeyboard } from "./keyboard";
 import { CHURCH, Modes } from "./modes";
 import { ChurchScene, type CameraPose } from "./scene";
 import { StreetView, headingOf } from "./streetview";
+import { OpenTerrain } from "./terrain";
 import { setupTour } from "./tour";
 import { Vector3 } from "three";
 
@@ -30,17 +35,37 @@ const splatReady = world.loadSplat().catch((err) => {
   throw err;
 });
 
+// --- Village surface -----------------------------------------------------------
+// Default: open terrain (TINITALY) + imagery (imagery.ts). VITE_TERRAIN=google
+// switches to Google Photorealistic 3D Tiles (blocked for EEA billing accounts).
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+const imagery = availableImagery(import.meta.env);
 let modes: Modes;
-const tiles = apiKey
-  ? new GoogleTiles(world, apiKey, (err) => {
-      console.error("Google 3D Tiles non disponibili:", err);
-      notice.textContent =
-        "Vista del paese non disponibile: controlla la chiave Google e che la fatturazione sia attiva.";
-      notice.hidden = false;
-      modes.disableExterior();
-    })
-  : undefined;
+const groundFailed = (what: string, hint: string) => (err: unknown) => {
+  console.error(`${what} non disponibile:`, err);
+  notice.textContent = `Vista del paese non disponibile: ${hint}`;
+  notice.hidden = false;
+  modes.disableExterior();
+};
+let terrain: OpenTerrain | undefined;
+let tiles: Ground | undefined;
+if (import.meta.env.VITE_TERRAIN === "google" && apiKey) {
+  tiles = new GoogleTiles(world, apiKey, groundFailed("Google 3D Tiles", "controlla la chiave Google e la fatturazione."));
+} else if (imagery.length) {
+  const preferred = imagery.find((i) => i.id === import.meta.env.VITE_IMAGERY) ?? imagery[0];
+  tiles = terrain = new OpenTerrain(
+    world,
+    site.lat,
+    site.lon,
+    site.elevation_m,
+    preferred,
+    groundFailed("Terreno", "impossibile caricare il modello del terreno."),
+  );
+  const select = document.getElementById("imagery") as HTMLSelectElement;
+  select.append(...imagery.map((i) => new Option(i.label, i.id, false, i === preferred)));
+  select.closest<HTMLElement>(".imagery-box")!.hidden = imagery.length < 2;
+  select.onchange = () => terrain!.setImagery(imagery.find((i) => i.id === select.value)!);
+}
 modes = new Modes(world, interiorOverview, tiles);
 if (!tiles) document.body.dataset.exterior = "off";
 
@@ -51,9 +76,52 @@ const boundary = tiles
   ? new VillageBoundary(world, tiles, document.getElementById("village-labels")!)
   : undefined;
 if (boundary) {
-  modes.attachBoundary(boundary);
+  modes.attachOverlay(boundary);
   const toggle = document.getElementById("boundary-toggle") as HTMLInputElement;
   toggle.onchange = () => (boundary.on = toggle.checked);
+}
+
+// Dev: edit the boundary on the terrain (boundaryEditor.ts). The file is not
+// watched (saving must not reload), so start from what is on disk now.
+const boundaryEditor =
+  boundary && tiles && import.meta.env.DEV
+    ? new BoundaryEditor(world, tiles, boundary, {
+        start: document.getElementById("boundary-edit") as HTMLButtonElement,
+        bar: document.getElementById("boundary-edit-bar")!,
+        save: document.getElementById("boundary-save") as HTMLButtonElement,
+        cancel: document.getElementById("boundary-cancel") as HTMLButtonElement,
+        status: document.getElementById("boundary-edit-status")!,
+      })
+    : undefined;
+if (boundary && boundaryEditor) {
+  fetch("/__sl3d/boundary")
+    .then((r) => r.json() as Promise<{ features: BoundaryFeature[] }>)
+    .then(({ features }) => {
+      if (JSON.stringify(features) !== JSON.stringify(initialBoundary)) boundary.setFeatures(features);
+    })
+    .catch((err) => console.warn("Confine dal disco non disponibile:", err));
+}
+
+// --- House names (private file, see houses.ts) ----------------------------------
+const houses = tiles
+  ? new HouseNames(
+      world,
+      tiles,
+      document.getElementById("house-labels")!,
+      document.getElementById("house-editor") as HTMLFormElement,
+    )
+  : undefined;
+if (houses) {
+  modes.attachOverlay(houses);
+  const toggle = document.getElementById("houses-toggle") as HTMLInputElement;
+  toggle.onchange = () => (houses.on = toggle.checked);
+  if (houses.editable) {
+    document.body.dataset.dev = "on";
+    world.renderer.domElement.addEventListener("click", (e) => {
+      if (e.altKey && modes.mode === "exterior" && !modes.streetOpen && !boundaryEditor?.active)
+        houses.pickAt(e.clientX, e.clientY);
+    });
+  }
 }
 
 // --- Street View -----------------------------------------------------------
@@ -93,7 +161,7 @@ if (street) {
   canvas.addEventListener("pointerdown", (e) => (down = { x: e.clientX, y: e.clientY }));
   canvas.addEventListener("click", (e) => {
     if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 5) return;
-    if (modes.mode !== "exterior" || modes.streetOpen || e.shiftKey) return;
+    if (modes.mode !== "exterior" || modes.streetOpen || e.shiftKey || e.altKey || boundaryEditor?.active) return;
     const pano = street.pick(world.camera, canvas, e.clientX, e.clientY);
     if (!pano) return;
     const dir = world.camera.getWorldDirection(new Vector3());
@@ -107,11 +175,13 @@ if (street) {
 
 setupKeyboard(
   world,
-  () =>
-    modes.mode === "exterior"
-      ? // ~0.8× height above the church ground: slow near roofs, fast up high.
-        Math.max(5, world.camera.position.y * 0.8)
-      : 1,
+  () => {
+    if (modes.mode !== "exterior") return 1;
+    // 1.5× the height above the terrain below: slow near roofs, fast up high.
+    const p = world.camera.position;
+    const above = p.y - (tiles?.groundAt(p.x, p.z) ?? 0);
+    return Math.max(15, above * 1.5);
+  },
   () => !modes.streetOpen, // Street View has its own keyboard controls
 );
 
@@ -123,7 +193,7 @@ splatReady.then(() => {
   if (modes.hasExterior) modes.flyIntoVillage();
 });
 
-if (import.meta.env.DEV) Object.assign(window, { __sl3d: { world, tiles, modes, street, boundary } });
+if (import.meta.env.DEV) Object.assign(window, { __sl3d: { world, tiles, terrain, modes, street, boundary, boundaryEditor, houses } });
 
 // Authoring helpers (see AGENTS.md → Convenzioni 3D)
 window.addEventListener("keydown", (e) => {

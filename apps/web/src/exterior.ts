@@ -1,4 +1,4 @@
-import { MathUtils, Matrix4, Raycaster, Vector3 } from "three";
+import { MathUtils, Matrix4, Raycaster, Vector3, type Material, type Mesh, type Object3D } from "three";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { TilesRenderer } from "3d-tiles-renderer";
 import {
@@ -10,6 +10,7 @@ import {
 } from "3d-tiles-renderer/plugins";
 import { parse } from "yaml";
 import siteYaml from "../../../content/site.yaml?raw";
+import type { Ground } from "./ground";
 import type { ChurchScene } from "./scene";
 
 interface Site {
@@ -37,7 +38,7 @@ const GOOGLE_LOGO = "https://maps.gstatic.com/mapfiles/api-3/images/google_white
  * To place geo data, use tiles.ellipsoid + tiles.group.matrixWorld rather than
  * hand-written axis conversions.
  */
-export class GoogleTiles {
+export class GoogleTiles implements Ground {
   readonly tiles: TilesRenderer;
 
   constructor(
@@ -80,6 +81,28 @@ export class GoogleTiles {
 
   set visible(v: boolean) {
     this.tiles.group.visible = v;
+  }
+  get visible() {
+    return this.tiles.group.visible;
+  }
+
+  get object(): Object3D {
+    return this.tiles.group;
+  }
+
+  onChange(cb: () => void) {
+    this.tiles.addEventListener("tiles-load-end", cb);
+  }
+
+  onMaterial(cb: (m: Material) => void) {
+    const each = (root: Object3D) =>
+      root.traverse((o) => {
+        const mesh = o as Mesh;
+        if (!mesh.isMesh) return;
+        for (const m of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) cb(m);
+      });
+    this.tiles.addEventListener("load-model", (e: { scene: Object3D }) => each(e.scene));
+    each(this.tiles.group);
   }
 
   /** True once the root tileset is loaded and the frame is oriented. */

@@ -1,10 +1,16 @@
-import { site, type GoogleTiles } from "./exterior";
+import { Color, Fog } from "three";
+import { site } from "./exterior";
+import type { Ground } from "./ground";
 import type { CameraPose, ChurchScene } from "./scene";
 import type { Vec3 } from "./content";
 import { dirOf, type Pano, type StreetView } from "./streetview";
-import type { VillageBoundary } from "./boundary";
 
 export type Mode = "exterior" | "interior";
+
+/** Something drawn over the village that must hide inside the church and in Street View. */
+export interface Overlay {
+  active: boolean;
+}
 
 // Exterior poses in metres, relative to the church (viewer frame: +x west, +z north,
 // ground ≈ y 0 — see content/site.yaml).
@@ -16,6 +22,8 @@ const DOORSTEP: CameraPose = { position: at(-35, 18, -35), target: at(0, 3, 0) }
 /** Church centre in scene coordinates. */
 export const CHURCH: Vec3 = at(0, 0, 0);
 
+const SKY = new Color(0xb7c6d3);
+const HAZE = new Fog(0xb7c6d3, 2500, 6000);
 const FADE_MS = 500;
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -26,7 +34,7 @@ export class Modes {
   constructor(
     private world: ChurchScene,
     private interiorOverview: CameraPose,
-    private tiles?: GoogleTiles,
+    private tiles?: Ground,
   ) {
     document.body.dataset.mode = this.mode;
     if (tiles) {
@@ -45,16 +53,16 @@ export class Modes {
   /** True while the Street View panorama covers the 3D view. */
   streetOpen = false;
 
-  private boundary?: VillageBoundary;
+  private overlays: Overlay[] = [];
 
-  attachBoundary(boundary: VillageBoundary) {
-    this.boundary = boundary;
-    this.syncBoundary();
+  /** Map overlays (boundary, house names…) show over the 3D village only. */
+  attachOverlay(overlay: Overlay) {
+    this.overlays.push(overlay);
+    this.syncOverlays();
   }
 
-  /** The boundary shows over the 3D village only (not inside, not in Street View). */
-  private syncBoundary() {
-    if (this.boundary) this.boundary.active = this.mode === "exterior" && !this.streetOpen;
+  private syncOverlays() {
+    for (const o of this.overlays) o.active = this.mode === "exterior" && !this.streetOpen;
   }
 
   attachStreetView(street: StreetView) {
@@ -104,7 +112,7 @@ export class Modes {
   private setStreet(on: boolean) {
     this.streetOpen = on;
     document.body.dataset.street = on ? "on" : "off";
-    this.syncBoundary();
+    this.syncOverlays();
   }
 
   /** Arrive over the village from high above. */
@@ -159,10 +167,14 @@ export class Modes {
     document.body.dataset.mode = mode;
     const outside = mode === "exterior";
     if (this.world.splat) this.world.splat.visible = !outside;
+    this.world.spark.visible = !outside;
+    // Hazy sky outside; it also hides the edge of the terrain area (~5 km).
+    this.world.scene.background = outside ? SKY : null;
+    this.world.scene.fog = outside ? HAZE : null;
     if (this.tiles) this.tiles.visible = outside;
     if (this.street) this.street.visible = outside;
     this.world.setClipping(outside ? 1 : 0.01, outside ? 40000 : 1000);
-    this.syncBoundary();
+    this.syncOverlays();
   }
 
   private async fade(during: () => Promise<void>) {

@@ -301,3 +301,131 @@ body[data-street="on"] #village-labels { display: none; }
 .boundary-box label { display: flex; gap: 8px; align-items: center; cursor: pointer; }
 .boundary-box .credit { margin: 4px 0 0 24px; font-size: 0.78rem; }
 .boundary-box .credit a { color: var(--muted); }
+
+.imagery-box { display: flex; gap: 8px; align-items: center; margin-top: 14px; color: var(--muted); font-size: 0.9rem; }
+.imagery-box select {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font: inherit;
+}
+.imagery-box[hidden] { display: none; }
+
+/* House names */
+#house-labels { position: fixed; inset: 0; pointer-events: none; }
+#house-labels[hidden],
+body:not([data-mode="exterior"]) #house-labels,
+body[data-street="on"] #house-labels { display: none; }
+.house-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.house-label[hidden] { display: none; }
+.house-label .name {
+  pointer-events: auto;
+  cursor: default;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(20, 16, 12, 0.72);
+  color: #fff6dc;
+  font-size: 0.74rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.house-label.has-note .name { cursor: pointer; }
+.house-label.has-note .name::after { content: " ⓘ"; color: var(--accent); }
+.house-label .note {
+  display: none;
+  position: absolute; /* below the name, without moving it */
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  margin: 4px 0 0;
+  max-width: 220px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(20, 16, 12, 0.9);
+  color: var(--text);
+  font-size: 0.78rem;
+  line-height: 1.35;
+  pointer-events: auto;
+}
+.house-label.open .note { display: block; }
+.house-label i {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 1px;
+  background: linear-gradient(rgba(255, 246, 220, 0.8), rgba(255, 246, 220, 0.15));
+}
+.house-label.open i { display: none; }
+.houses-box { margin-top: 10px; }
+.houses-box label { display: flex; gap: 8px; align-items: center; cursor: pointer; }
+.houses-box .credit { margin: 4px 0 0 24px; font-size: 0.78rem; }
+body:not([data-dev="on"]) .dev-only { display: none; }
+
+#house-editor {
+  position: fixed;
+  z-index: 20;
+  width: 260px;
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(28, 23, 18, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+  color: var(--text);
+  font-size: 0.85rem;
+}
+#house-editor[hidden] { display: none; }
+#house-editor label { display: grid; gap: 4px; color: var(--muted); }
+#house-editor input,
+#house-editor textarea {
+  font: inherit;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 6px 8px;
+  resize: vertical;
+}
+#house-editor .status {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--muted);
+}
+#house-editor .actions { display: flex; gap: 8px; align-items: center; }
+#house-editor .actions button { width: auto; margin: 0; padding: 6px 12px; }
+#house-editor [hidden] { display: none; }
+
+/* Boundary editor (dev) */
+#boundary-edit { margin: 6px 0 0 24px; padding: 0; font-size: 0.82rem; }
+#boundary-edit[hidden] { display: none; }
+.edit-bar {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(217, 163, 91, 0.12);
+  border: 1px solid rgba(217, 163, 91, 0.4);
+  font-size: 0.8rem;
+}
+.edit-bar[hidden] { display: none; }
+.edit-bar p { margin: 0 0 6px; }
+.edit-bar kbd { font-size: 0.72rem; }
+.edit-status { color: var(--accent); min-height: 1.2em; }
+.edit-bar .actions { display: flex; gap: 8px; }
+.edit-bar .actions button { width: auto; margin: 0; padding: 6px 14px; }
+/* While editing, keep labels out of the way of the points. */
+body[data-editing="boundary"] #village-labels,
+body[data-editing="boundary"] #house-labels { display: none; }

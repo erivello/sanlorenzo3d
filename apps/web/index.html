@@ -9,6 +9,17 @@
     <div id="viewport"></div>
     <div id="hotspots"></div>
     <div id="village-labels" hidden></div>
+    <div id="house-labels" hidden></div>
+    <form id="house-editor" hidden autocomplete="off">
+      <label>Nome <input name="name" required maxlength="60" placeholder="es. Casa dei nonni" /></label>
+      <label>Nota <textarea name="note" rows="2" maxlength="300" placeholder="facoltativa"></textarea></label>
+      <p class="status muted"></p>
+      <div class="actions">
+        <button type="submit" class="primary">Salva</button>
+        <button type="button" data-action="delete" class="secondary">Elimina</button>
+        <button type="button" data-action="cancel" class="link">Annulla</button>
+      </div>
+    </form>
     <div id="loading">Caricamento della chiesa…</div>
     <div id="street"><div id="street-view"></div></div>
     <div id="veil"></div>
@@ -38,6 +49,9 @@
       <section class="exterior-only">
         <p>Il paese visto dall'alto. Ruota e avvicinati, poi entra in chiesa.</p>
         <button id="enter" type="button" class="primary">Entra in chiesa</button>
+        <label class="imagery-box" hidden>
+          Immagini <select id="imagery"></select>
+        </label>
         <div class="boundary-box">
           <label><input id="boundary-toggle" type="checkbox" checked /> Confini del paese</label>
           <p class="muted credit">
@@ -47,6 +61,22 @@
             vie e nomi dei borghi da
             <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a> (ODbL)
           </p>
+          <button id="boundary-edit" type="button" class="link dev-only">Modifica confine</button>
+          <div id="boundary-edit-bar" class="edit-bar" hidden>
+            <p class="muted">
+              Trascina i punti · clic su un lato per aggiungerne uno · <kbd>Alt</kbd>+clic su un punto per toglierlo ·
+              <kbd>⌘Z</kbd> annulla
+            </p>
+            <p id="boundary-edit-status" class="edit-status"></p>
+            <div class="actions">
+              <button id="boundary-save" type="button" class="primary">Salva</button>
+              <button id="boundary-cancel" type="button" class="secondary">Annulla</button>
+            </div>
+          </div>
+        </div>
+        <div class="houses-box">
+          <label><input id="houses-toggle" type="checkbox" checked /> Nomi delle case</label>
+          <p class="muted credit dev-only">Alt+clic su una casa per darle un nome.</p>
         </div>
         <div class="street-box">
           <button id="street-church" type="button" class="secondary" disabled>

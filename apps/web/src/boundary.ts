@@ -4,7 +4,7 @@ import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 import borghiJson from "../../../content/borghi.geojson?raw";
 import boundaryJson from "../../../content/boundary.geojson?raw";
-import type { GoogleTiles } from "./exterior";
+import type { Ground } from "./ground";
 import type { ChurchScene } from "./scene";
 
 /**
@@ -18,8 +18,9 @@ import type { ChurchScene } from "./scene";
  *   high above them, with a thin stem down to the ground.
  */
 
-type Ring = [number, number][];
-interface Feature {
+export type Ring = [number, number][];
+export interface BoundaryFeature {
+  type?: "Feature";
   properties: {
     name: string;
     main?: boolean;
@@ -27,10 +28,14 @@ interface Feature {
     point?: [number, number];
     /** Other named places inside the area, labelled too. */
     places?: { name: string; point: [number, number] }[];
+    sources?: string[];
+    changes?: string;
   };
   geometry: { type: "Polygon"; coordinates: Ring[] } | { type: "MultiPolygon"; coordinates: Ring[][] };
 }
-const features = (JSON.parse(boundaryJson) as { features: Feature[] }).features;
+type Feature = BoundaryFeature;
+/** As built into the bundle; in dev the editor may replace it at runtime (setFeatures). */
+export const initialBoundary = (JSON.parse(boundaryJson) as { features: Feature[] }).features;
 const borghi = (
   JSON.parse(borghiJson) as { features: { properties: { name: string }; geometry: { coordinates: [number, number] } }[] }
 ).features;
@@ -59,6 +64,7 @@ const REBUILD_MIN_MS = 400;
 const FADE_PER_S = 3;
 
 export class VillageBoundary {
+  private features: Feature[] = initialBoundary;
   private group = new THREE.Group();
   private rings: THREE.Vector3[][] = []; // densified, scene coordinates
   private lines: Line2[] = [];
@@ -86,15 +92,15 @@ export class VillageBoundary {
 
   constructor(
     private world: ChurchScene,
-    private tiles: GoogleTiles,
+    private tiles: Ground,
     private labelLayer: HTMLElement,
   ) {
     this.group.name = "village-boundary";
     this.group.visible = false;
     world.scene.add(this.group);
 
-    tiles.tiles.addEventListener("load-model", (e: { scene: THREE.Object3D }) => this.patch(e.scene));
-    tiles.tiles.addEventListener("tiles-load-end", () => (this.groundDirty = true));
+    tiles.onMaterial((m) => this.patchMaterial(m));
+    tiles.onChange(() => (this.groundDirty = true));
 
     let last = performance.now();
     world.beforeFrame(() => {
@@ -128,6 +134,32 @@ export class VillageBoundary {
     this.update();
   }
 
+  get data(): readonly Feature[] {
+    return this.features;
+  }
+
+  /** Replace the boundary (after an edit): rebuild outline, mask and labels in place. */
+  setFeatures(features: Feature[]) {
+    this.features = features;
+    for (const l of this.labels) l.el.remove();
+    this.labels = [];
+    for (const line of this.lines) {
+      this.group.remove(line);
+      line.geometry.dispose(); // halo and line share it: disposing twice is harmless
+    }
+    this.lines = [];
+    this.rings = [];
+    this.uniforms.uSlMask.value?.dispose();
+    if (this.tiles.ready) this.build();
+    this.groundDirty = true;
+    this.lastRebuild = 0;
+  }
+
+  /** Hide the golden outline (the editor draws its own while editing). */
+  set outlineVisible(v: boolean) {
+    for (const line of this.lines) line.visible = v;
+  }
+
   private update() {
     this.shown = this.wanted && this.enabled;
     this.group.visible = this.shown;
@@ -137,7 +169,7 @@ export class VillageBoundary {
   /** Lat/lng polygons → densified rings in scene coordinates, labels, dimming mask. */
   private build() {
     const box = new THREE.Box2();
-    for (const f of features) {
+    for (const f of this.features) {
       const area = new THREE.Box2();
       for (const coords of outerRings(f)) {
         const pts = coords.map(([lng, lat]) => this.tiles.toScene(lat, lng));
@@ -168,9 +200,6 @@ export class VillageBoundary {
     }
     box.expandByScalar(MASK_MARGIN_M);
     this.buildMask(box);
-
-    // Patch tiles that loaded before the ring existed.
-    this.patch(this.tiles.tiles.group);
   }
 
   private addLabel(name: string, main: boolean | undefined, anchor: THREE.Vector3) {
@@ -197,7 +226,7 @@ export class VillageBoundary {
     this.labels.push({ el, ground: ground.setY(0), height: BORGO_HEIGHT_M, hideWithin: BORGO_HIDE_WITHIN_M, stem });
   }
 
-    private buildMask(box: THREE.Box2) {
+  private buildMask(box: THREE.Box2) {
     const size = box.getSize(new THREE.Vector2());
     const canvas = document.createElement("canvas");
     const pxPerM = Math.min(1, MASK_MAX_PX / Math.max(size.x, size.y));
@@ -228,15 +257,7 @@ export class VillageBoundary {
     this.uniforms.uSlMaskSize.value.copy(size);
   }
 
-  /** Inject the outside-dimming into tile materials (chains any existing hook). */
-  private patch(root: THREE.Object3D) {
-    root.traverse((o) => {
-      const mesh = o as THREE.Mesh;
-      if (!mesh.isMesh) return;
-      for (const m of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) this.patchMaterial(m);
-    });
-  }
-
+  /** Inject the outside-dimming into a surface material (chains any existing hook). */
   private patchMaterial(material: THREE.Material & { __slMask?: true }) {
     if (material.__slMask) return;
     material.__slMask = true;

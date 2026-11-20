@@ -3,7 +3,7 @@ import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 import { LineSegments2 } from "three/addons/lines/LineSegments2.js";
 import { LineSegmentsGeometry } from "three/addons/lines/LineSegmentsGeometry.js";
 import { importLibrary, setOptions } from "@googlemaps/js-api-loader";
-import type { GoogleTiles } from "./exterior";
+import type { Ground } from "./ground";
 import type { ChurchScene } from "./scene";
 
 /**
@@ -59,13 +59,13 @@ export class StreetView {
 
   constructor(
     world: ChurchScene,
-    private tiles: GoogleTiles,
+    private tiles: Ground,
     apiKey: string,
   ) {
     setOptions({ key: apiKey, v: "weekly", language: "it", region: "IT" });
     this.coverage.name = "streetview-coverage";
     world.scene.add(this.coverage);
-    tiles.tiles.addEventListener("tiles-load-end", () => (this.groundDirty = true));
+    tiles.onChange(() => (this.groundDirty = true));
     world.beforeFrame(() => {
       const canvas = world.renderer.domElement;
       this.material.resolution.set(canvas.clientWidth, canvas.clientHeight);

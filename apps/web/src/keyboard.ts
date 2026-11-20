@@ -5,7 +5,7 @@ import type { ChurchScene } from "./scene";
  * Walk/fly with the keyboard on top of OrbitControls.
  *   ↑/W ↓/S  forward/back at constant height     A/D  strafe
  *   ←/→      turn the view left/right            Q/E  up/down
- *   Shift    faster
+ *   Shift    4× faster; holding a key also ramps up to 2× in RAMP_S
  * Camera and orbit target move together, so mouse orbiting keeps working.
  */
 const BINDINGS: Record<string, keyof Input> = {
@@ -33,7 +33,9 @@ interface Input {
 }
 
 const TURN_SPEED = Math.PI / 3; // rad/s
-const FAST = 3;
+const FAST = 4;
+const RAMP_S = 1.5; // seconds of holding to reach full speed
+const RAMP_MAX = 2; // speed multiplier reached after RAMP_S
 
 export function setupKeyboard(
   world: ChurchScene,
@@ -47,6 +49,7 @@ export function setupKeyboard(
     turnLeft: false, turnRight: false, up: false, down: false,
   };
   let fast = false;
+  let held = 0; // seconds a movement key has been held
 
   const isTyping = (e: KeyboardEvent) =>
     e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
@@ -85,7 +88,11 @@ export function setupKeyboard(
     const fwd = Number(input.forward) - Number(input.back);
     const str = Number(input.right) - Number(input.left);
     const vert = Number(input.up) - Number(input.down);
-    if (!turn && !fwd && !str && !vert) return;
+    if (!turn && !fwd && !str && !vert) {
+      held = 0;
+      return;
+    }
+    held += dt;
 
     world.cancelFlight();
     const { camera, controls } = world;
@@ -103,7 +110,8 @@ export function setupKeyboard(
     forward.normalize();
     side.crossVectors(forward, UP).normalize();
 
-    const step = speed() * (fast ? FAST : 1) * dt;
+    const ramp = 1 + (RAMP_MAX - 1) * Math.min(1, held / RAMP_S);
+    const step = speed() * (fast ? FAST : 1) * ramp * dt;
     move
       .set(0, 0, 0)
       .addScaledVector(forward, fwd)
