@@ -152,11 +152,13 @@ if (street) {
 
 setupKeyboard(
   world,
-  () =>
-    modes.mode === "exterior"
-      ? // ~0.8× height above the church ground: slow near roofs, fast up high.
-        Math.max(5, world.camera.position.y * 0.8)
-      : 1,
+  () => {
+    if (modes.mode !== "exterior") return 1;
+    // 1.5× the height above the terrain below: slow near roofs, fast up high.
+    const p = world.camera.position;
+    const above = p.y - (tiles?.groundAt(p.x, p.z) ?? 0);
+    return Math.max(15, above * 1.5);
+  },
   () => !modes.streetOpen, // Street View has its own keyboard controls
 );
 
