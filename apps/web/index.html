@@ -9,6 +9,17 @@
     <div id="viewport"></div>
     <div id="hotspots"></div>
     <div id="village-labels" hidden></div>
+    <div id="house-labels" hidden></div>
+    <form id="house-editor" hidden autocomplete="off">
+      <label>Nome <input name="name" required maxlength="60" placeholder="es. Casa dei nonni" /></label>
+      <label>Nota <textarea name="note" rows="2" maxlength="300" placeholder="facoltativa"></textarea></label>
+      <p class="status muted"></p>
+      <div class="actions">
+        <button type="submit" class="primary">Salva</button>
+        <button type="button" data-action="delete" class="secondary">Elimina</button>
+        <button type="button" data-action="cancel" class="link">Annulla</button>
+      </div>
+    </form>
     <div id="loading">Caricamento della chiesa…</div>
     <div id="street"><div id="street-view"></div></div>
     <div id="veil"></div>
@@ -50,6 +61,10 @@
             vie e nomi dei borghi da
             <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a> (ODbL)
           </p>
+        </div>
+        <div class="houses-box">
+          <label><input id="houses-toggle" type="checkbox" checked /> Nomi delle case</label>
+          <p class="muted credit dev-only">Alt+clic su una casa per darle un nome.</p>
         </div>
         <div class="street-box">
           <button id="street-church" type="button" class="secondary" disabled>

@@ -15,3 +15,6 @@ data/
 *.ksplat
 apps/web/public/splats/*
 !apps/web/public/splats/.gitkeep
+
+# private, never published from the repo (e.g. house names)
+content/local/

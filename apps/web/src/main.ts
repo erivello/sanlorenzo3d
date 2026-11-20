@@ -1,6 +1,7 @@
 import "./style.css";
 import { pois } from "./content";
 import { VillageBoundary } from "./boundary";
+import { HouseNames } from "./houses";
 import { GoogleTiles, site } from "./exterior";
 import type { Ground } from "./ground";
 import { availableImagery } from "./imagery";
@@ -74,9 +75,30 @@ const boundary = tiles
   ? new VillageBoundary(world, tiles, document.getElementById("village-labels")!)
   : undefined;
 if (boundary) {
-  modes.attachBoundary(boundary);
+  modes.attachOverlay(boundary);
   const toggle = document.getElementById("boundary-toggle") as HTMLInputElement;
   toggle.onchange = () => (boundary.on = toggle.checked);
+}
+
+// --- House names (private file, see houses.ts) ----------------------------------
+const houses = tiles
+  ? new HouseNames(
+      world,
+      tiles,
+      document.getElementById("house-labels")!,
+      document.getElementById("house-editor") as HTMLFormElement,
+    )
+  : undefined;
+if (houses) {
+  modes.attachOverlay(houses);
+  const toggle = document.getElementById("houses-toggle") as HTMLInputElement;
+  toggle.onchange = () => (houses.on = toggle.checked);
+  if (houses.editable) {
+    document.body.dataset.dev = "on";
+    world.renderer.domElement.addEventListener("click", (e) => {
+      if (e.altKey && modes.mode === "exterior" && !modes.streetOpen) houses.pickAt(e.clientX, e.clientY);
+    });
+  }
 }
 
 // --- Street View -----------------------------------------------------------
@@ -116,7 +138,7 @@ if (street) {
   canvas.addEventListener("pointerdown", (e) => (down = { x: e.clientX, y: e.clientY }));
   canvas.addEventListener("click", (e) => {
     if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 5) return;
-    if (modes.mode !== "exterior" || modes.streetOpen || e.shiftKey) return;
+    if (modes.mode !== "exterior" || modes.streetOpen || e.shiftKey || e.altKey) return;
     const pano = street.pick(world.camera, canvas, e.clientX, e.clientY);
     if (!pano) return;
     const dir = world.camera.getWorldDirection(new Vector3());
@@ -146,7 +168,7 @@ splatReady.then(() => {
   if (modes.hasExterior) modes.flyIntoVillage();
 });
 
-if (import.meta.env.DEV) Object.assign(window, { __sl3d: { world, tiles, terrain, modes, street, boundary } });
+if (import.meta.env.DEV) Object.assign(window, { __sl3d: { world, tiles, terrain, modes, street, boundary, houses } });
 
 // Authoring helpers (see AGENTS.md → Convenzioni 3D)
 window.addEventListener("keydown", (e) => {

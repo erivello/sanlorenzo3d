@@ -16,6 +16,8 @@ content/pois/*.md          schede punti di interesse (frontmatter YAML + testo m
 content/site.yaml          geolocalizzazione della chiesa (lat/lon/quota) e copertura Google 3D Tiles
 content/boundary.geojson   confine del paese: località ISTAT 2021 (CC BY 4.0) + vie che le collegano (OSM, ODbL), un'unica area, da pipeline/istat_boundary.py
 content/borghi.geojson     nomi dei borghi dentro il confine (OSM, ODbL), da pipeline/osm_borghi.py
+content/buildings.geojson  impronte degli edifici dentro il confine (OSM, ODbL), da pipeline/osm_buildings.py
+content/local/  (git-ignored) dati privati: case.geojson = nomi delle case (mai nel repo pubblico)
 apps/web/                  viewer: Vite + TypeScript + three.js + Spark (@sparkjsdev/spark)
 apps/web/public/splats/    splat compressi serviti in dev (git-ignored, tranne .gitkeep)
 apps/web/public/terrain/   quote TINITALY attorno al paese (dem.bin/json, da pipeline/terrain_dem.py)
@@ -47,6 +49,13 @@ Attribuzioni delle immagini e del terreno sempre visibili in exterior.
 (maschera campionata nello shader della superficie, agganciata con `ground.onMaterial` concatenando `onBeforeCompile`),
 etichetta col nome, nomi dei borghi sospesi in alto con un filo fino al terreno. Solo in exterior e fuori da Street View. Citare sempre ISTAT e OSM + licenze nel pannello.
 
+**Nomi delle case** (`src/houses.ts`): etichette sopra i tetti con nota facoltativa (clic sul nome),
+contorno dell'edificio OSM agganciato, visibili sotto ~600 m dalla camera, interruttore nel pannello.
+Dati in `content/local/case.geojson` (git-ignored: il repo è pubblico). Solo in dev si modificano:
+Alt+clic su una casa (aggancio all'edificio OSM entro 15 m) o su un'etichetta; il plugin Vite in
+`vite.config.ts` salva il file via `/__sl3d/houses`. In produzione i nomi compaiono solo con
+`VITE_HOUSE_NAMES=1` e il file copiato in `apps/web/public/local/` — decisione da prendere apposta.
+
 **Street View** (`src/streetview.ts`, richiede `VITE_GOOGLE_MAPS_API_KEY` con *Maps JavaScript API*; consentito anche nello SEE):
 copertura scoperta a runtime percorrendo i link tra panorami a partire da quello ufficiale Google più
 vicino alla chiesa (esclude le foto sferiche degli utenti, che non sono collegate), disegnata come linee
@@ -56,7 +65,7 @@ Google (termini d'uso): mai leggerle o salvarle; niente cache oltre la sessione.
 Nota: anche quando funzionava, a San Lorenzo la Map Tiles API forniva solo terreno + satellite
 (edifici piatti), come il terreno aperto. Vedi `content/site.yaml`.
 
-Debug: in dev `window.__sl3d = { world, tiles, terrain, modes, street, boundary }`. Il rendering usa `requestAnimationFrame`
+Debug: in dev `window.__sl3d = { world, tiles, terrain, modes, street, boundary, houses }`. Il rendering usa `requestAnimationFrame`
 (anche la coda download delle tiles): in un browser/pannello nascosto si ferma tutto.
 
 ## Comandi

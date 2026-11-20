@@ -4,9 +4,13 @@ import type { Ground } from "./ground";
 import type { CameraPose, ChurchScene } from "./scene";
 import type { Vec3 } from "./content";
 import { dirOf, type Pano, type StreetView } from "./streetview";
-import type { VillageBoundary } from "./boundary";
 
 export type Mode = "exterior" | "interior";
+
+/** Something drawn over the village that must hide inside the church and in Street View. */
+export interface Overlay {
+  active: boolean;
+}
 
 // Exterior poses in metres, relative to the church (viewer frame: +x west, +z north,
 // ground ≈ y 0 — see content/site.yaml).
@@ -49,16 +53,16 @@ export class Modes {
   /** True while the Street View panorama covers the 3D view. */
   streetOpen = false;
 
-  private boundary?: VillageBoundary;
+  private overlays: Overlay[] = [];
 
-  attachBoundary(boundary: VillageBoundary) {
-    this.boundary = boundary;
-    this.syncBoundary();
+  /** Map overlays (boundary, house names…) show over the 3D village only. */
+  attachOverlay(overlay: Overlay) {
+    this.overlays.push(overlay);
+    this.syncOverlays();
   }
 
-  /** The boundary shows over the 3D village only (not inside, not in Street View). */
-  private syncBoundary() {
-    if (this.boundary) this.boundary.active = this.mode === "exterior" && !this.streetOpen;
+  private syncOverlays() {
+    for (const o of this.overlays) o.active = this.mode === "exterior" && !this.streetOpen;
   }
 
   attachStreetView(street: StreetView) {
@@ -108,7 +112,7 @@ export class Modes {
   private setStreet(on: boolean) {
     this.streetOpen = on;
     document.body.dataset.street = on ? "on" : "off";
-    this.syncBoundary();
+    this.syncOverlays();
   }
 
   /** Arrive over the village from high above. */
@@ -170,7 +174,7 @@ export class Modes {
     if (this.tiles) this.tiles.visible = outside;
     if (this.street) this.street.visible = outside;
     this.world.setClipping(outside ? 1 : 0.01, outside ? 40000 : 1000);
-    this.syncBoundary();
+    this.syncOverlays();
   }
 
   private async fade(during: () => Promise<void>) {
